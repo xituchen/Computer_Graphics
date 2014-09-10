@@ -10,25 +10,25 @@ window.onload = function init()
     gl = WebGLUtils.setupWebGL( canvas );
     if ( !gl ) { alert( "WebGL isn't available" ); }
 
-    // var whole = "";
-    // var guys = whole.split(" ");
-    // var i = 0;
-    // while (true) {
-    //     if (guys.length == 0) {
-    //         break;
-    //     }
-        
-    // }
-
     // we did both our first and last name initials
-    var verts = [
-        [
-            vec3(0, 0, 0),
-            vec3(0, 0.2, 0),
-            vec3(0.2, 0.3, 0.1),
-            vec3(0.2, 0, 0)
-        ]
-    ];
+    var verts = [];
+
+    var whole = "";
+    var guys = whole.split(" ");
+    var i = 0;
+    while (true) {
+        if (guys.length == 0) {
+            break;
+        }
+        var one = parseFloat(guys[0])/5;
+        var two = parseFloat(guys[1])/5;
+        var three = parseFloat(guys[2])/5;
+        verts.push(vec3(one, two, three));
+        guys.splice(0, 1);
+        guys.splice(1, 1);
+        guys.splice(2, 1);
+    }
+
 
     //
     //  Configure WebGL
