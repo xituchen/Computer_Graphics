@@ -18,9 +18,9 @@ window.onload = function init()
     var q = vec3();
 
     var verts = [[v1,v2,v3]];
-    var points = [[p]];
+    var points = [];
 
-    for(var i=0;i<30000;i++){
+    for(var i=0;i<10000;i++){
         var randomPoint = Math.floor((Math.random() * 3) + 1);
         if (randomPoint == 1){
             q = vec3((v1[0]+p[0])/2,(v1[1]+p[1])/2,(v1[2]+p[2])/2)
