@@ -3,26 +3,21 @@
 <head>
 
 <script id="vertex-shader" type="x-shader/x-vertex">
-	precision mediump float;
 	attribute vec4 vPosition;
-	attribute vec4 vColor;
-	varying vec4 fColor;
 
 	void main()
 	{
-		fColor = vColor;
-    	gl_Position = vPosition;
 		gl_PointSize = 1.0;
+    	gl_Position = vPosition;
 	}
 </script>
 
 <script id="fragment-shader" type="x-shader/x-fragment">
 	precision mediump float;
-	varying vec4 fColor;
 
 	void main()
 	{
-	    gl_FragColor = fColor;
+	    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 	}  
 
 </script>
@@ -30,7 +25,7 @@
 <script type="text/javascript" src="../Common/webgl-utils.js"></script>
 <script type="text/javascript" src="../Common/initShaders.js"></script>
 <script type="text/javascript" src="../Common/MV.js"></script>
-<script type="text/javascript" src="3d_gasket.js"></script>
+<script type="text/javascript" src="2d_gasket.js"></script>
 </head>
 
 <body>
