@@ -1,5 +1,15 @@
 // Computer Graphics Homework 3 by Anli Ji, Xitu Chen
 
+var baseColors = [
+    vec4(1.0, 0.0, 0.0),
+    vec4(0.0, 1.0, 0.0),
+    vec4(0.0, 0.0, 1.0),
+    vec4(1.0, 1.0, 1.0)
+];
+
+var colors = [];
+
+
 // takes in a tetrahedron [a,b,c,d]
 // return the verts to draw this tetrahedron [[a,b,c],[a,b,d],[a,c,d],[b,c,d]]
 function tentrahedronToTrangle(tentrahedrons){
@@ -9,6 +19,13 @@ function tentrahedronToTrangle(tentrahedrons){
         verts.push([tentrahedrons[i][0],tentrahedrons[i][1],tentrahedrons[i][3]]);
         verts.push([tentrahedrons[i][0],tentrahedrons[i][2],tentrahedrons[i][3]]);
         verts.push([tentrahedrons[i][1],tentrahedrons[i][2],tentrahedrons[i][3]]);
+        for (var j=0; j<4; j++) {
+            var temp = [];
+            for (var k=0; k<3; k++) {
+                temp.push(baseColors[j]);
+            }
+            colors.push(temp);
+        }
     }
     return verts;
 }
@@ -22,26 +39,35 @@ function draw(verts){
 
     //  Configure WebGL
     gl.viewport( 0, 0, canvas.width, canvas.height );
+    gl.enable(gl.DEPTH_TEST);
     gl.clearColor( 0.0, 0.0, 0.0, 1.0 );
     
     //  Load shaders and initialize attribute buffers
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
     
-    gl.clear( gl.COLOR_BUFFER_BIT );
+    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     for (var i=0; i<verts.length; i++) {
         // Load the data into the GPU
+        var cBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, flatten(colors[i]), gl.STATIC_DRAW);
+
         var bufferId = gl.createBuffer();
         gl.bindBuffer( gl.ARRAY_BUFFER, bufferId );
         gl.bufferData( gl.ARRAY_BUFFER, flatten(verts[i]), gl.STATIC_DRAW );
 
         // Associate out shader variables with our data buffer
+        var vColor = gl.getAttribLocation(program, "vColor");
+        gl.vertexAttribPointer(vColor, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(vColor);
+
         var vPosition = gl.getAttribLocation( program, "vPosition" );
         gl.vertexAttribPointer( vPosition, 3, gl.FLOAT, false, 0, 0 );
         gl.enableVertexAttribArray( vPosition );
         
-        gl.drawArrays( gl.LINE_LOOP, 0, verts[i].length );
+        gl.drawArrays( gl.TRIANGLE_FAN, 0, verts[i].length );
     }
 }
 
@@ -73,13 +99,13 @@ var points;
 window.onload = function init()
 {
     // 3 initial points
-    var v1 = vec3(-1,-0.8,1);
-    var v2 = vec3(1,-0.8,1);
-    var v3 = vec3(0,-1,1);
-    var v4 = vec3(0,0.8,0.2);
+    var v1 = vec3(-0.8,-0.6,-0.8);
+    var v2 = vec3(0.8,-0.6,-0.8);
+    var v3 = vec3(0,-0.8,0.6);
+    var v4 = vec3(0,0.6, 0.2);
     verts = [[v1,v2,v3,v4]];
 
-    draw(tentrahedronToTrangle(splitting(splitting(splitting(splitting(splitting(verts)))))));
+    draw(tentrahedronToTrangle(splitting(splitting(splitting(verts)))));
 
     // draw(tentrahedronToTrangle(splitting(verts));
 
