@@ -1,14 +1,28 @@
 // Computer Graphics Homework 3 by Anli Ji, Xitu Chen
 
+var baseColors = [
+    vec4(1.0, 0.0, 0.0, 1.0),
+    vec4(0.0, 1.0, 0.0, 1.0),
+    vec4(0.0, 0.0, 1.0, 1.0),
+    vec4(0.0, 0.0, 0.0, 1.0)
+];
+
+var colors = [];
+
+
 // takes in a tetrahedron [a,b,c,d]
 // return the verts to draw this tetrahedron [[a,b,c],[a,b,d],[a,c,d],[b,c,d]]
 function tentrahedronToTrangle(tentrahedrons){
     verts = [];
     for (var i = 0; i<tentrahedrons.length; i++){
         verts.push([tentrahedrons[i][0],tentrahedrons[i][1],tentrahedrons[i][2]]);
+        colors.push(baseColors[0]);
         verts.push([tentrahedrons[i][0],tentrahedrons[i][1],tentrahedrons[i][3]]);
+        colors.push(baseColors[1]);
         verts.push([tentrahedrons[i][0],tentrahedrons[i][2],tentrahedrons[i][3]]);
+        colors.push(baseColors[2]);
         verts.push([tentrahedrons[i][1],tentrahedrons[i][2],tentrahedrons[i][3]]);
+        colors.push(baseColors[3]);
     }
     return verts;
 }
@@ -32,11 +46,17 @@ function draw(verts){
 
     for (var i=0; i<verts.length; i++) {
         // Load the data into the GPU
+        var cBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, flatten(colors), gl.STATIC_DRAW);
+
         var bufferId = gl.createBuffer();
         gl.bindBuffer( gl.ARRAY_BUFFER, bufferId );
         gl.bufferData( gl.ARRAY_BUFFER, flatten(verts[i]), gl.STATIC_DRAW );
 
         // Associate out shader variables with our data buffer
+        var vColor = gl.getAttribLocation(program, "vColor");
+        gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
 
         var vPosition = gl.getAttribLocation( program, "vPosition" );
         gl.vertexAttribPointer( vPosition, 3, gl.FLOAT, false, 0, 0 );
