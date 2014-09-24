@@ -93,11 +93,11 @@ function tetrahedronToTrangle(a, b, c, d){
 
 // adds a random percentage deviation to each number passed in and returns a vec3
 function perturb(x, y, z){
-    var noise = Math.floor((Math.random() * 11)) - 7;
+    var noise = Math.floor((Math.random() * 11)) - 5;
     x1 = x * (1+(noise/100));
-    noise = Math.floor((Math.random() * 11)) - 7;
+    noise = Math.floor((Math.random() * 11)) - 5;
     y1 = y * (1+(noise/100));
-    noise = Math.floor((Math.random() * 11)) - 7;
+    noise = Math.floor((Math.random() * 11)) - 5;
     z1 = z * (1+(noise/100));
 
     return vec3(x1, y1, z1);
