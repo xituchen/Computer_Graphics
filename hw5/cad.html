@@ -1,31 +1,26 @@
-
 <html>
 
 <script id="vertex-shader" type="x-shader/x-vertex">
-attribute vec4 vPosition;
-attribute vec4 vColor;
+    attribute vec4 vPosition;
+    attribute vec4 vColor;
 
-varying vec4 fColor;
+    varying vec4 fColor;
 
-
-void
-main()
-{
-    gl_Position = vPosition;
-    fColor = vColor;
-}
+    void main()
+    {
+        gl_Position = vPosition;
+        fColor = vColor;
+    }
 </script>
 
 <script id="fragment-shader" type="x-shader/x-fragment">
+    precision mediump float;
 
-precision mediump float;
-
-varying vec4 fColor;
-void
-main()
-{
-    gl_FragColor = fColor;
-}
+    varying vec4 fColor;
+    void main()
+    {
+        gl_FragColor = fColor;
+    }
 </script>
 
 <script type="text/javascript" src="../Common/webgl-utils.js"></script>
@@ -35,12 +30,12 @@ main()
 
 <body>
 <div>
-<canvas id="gl-canvas" width="512"" height="512"
+<canvas id="gl-canvas" width="512" height="512">
 Oops ... your browser doesn't support the HTML5 canvas element
 </canvas>
 </div>
 <div>
-<select id = "mymenu" size = "7">
+<!-- <select id = "mymenu" size = "7">
     <option value = "0">Black</option>
     <option value = "1">Red</option>
     <option value = "2">Yellow</option>
@@ -48,11 +43,17 @@ Oops ... your browser doesn't support the HTML5 canvas element
     <option value = "4">Blue</option>
     <option value = "5">Magenta</option>
     <option value = "6">Cyan</option>
-</select>
+</select> -->
 <button id = "Button1">End Polygon</button>
 </div>
-
-
-
+<div>
+0 <input id = "slideR" type="range"
+min = "0" max="255" step="1" value="0" /> 255 R<br/>
+0 <input id = "slideG" type="range"
+min = "0" max="255" step="1" value="0" /> 255 G<br/>
+0 <input id = "slideB" type="range"
+min = "0" max="255" step="1" value="0" /> 255 B
+</div>
+<div id = "colorSample" style="width:200px;height:100px;background-color: #000000"></div>
 </body>
 </html>
