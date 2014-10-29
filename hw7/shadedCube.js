@@ -19,10 +19,15 @@ var vertices = [
         vec4( 0.5, -0.5, -0.5, 1.0 )
     ];
 
-var lightPosition = vec4(1.0, 1.0, 1.0, 0.0 );
-var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0 );
-var lightDiffuse = vec4( 1.0, 1.0, 1.0, 1.0 );
-var lightSpecular = vec4( 1.0, 1.0, 1.0, 1.0 );
+var redLightPosition = vec4(1.0, 1.0, 1.0, 1.0 );
+var redLightAmbient = vec4(0.2, 0.0, 0.0, 1.0 );
+var redLightDiffuse = vec4( 1.0, 0.0, 0.0, 1.0 );
+var redLightSpecular = vec4( 1.0, 0.0, 0.0, 1.0 );
+
+var greenLightPosition = vec4(-1.0, -1.0, -1.0, 1.0 );
+var greenLightAmbient = vec4(0.0, 0.2, 0.0, 1.0 );
+var greenLightDiffuse = vec4( 0.0, 1.0, 0.0, 1.0 );
+var greenLightSpecular = vec4( 0.0, 1.0, 0.0, 1.0 );
 
 var materialAmbient = vec4( 1.0, 0.0, 1.0, 1.0 );
 var materialDiffuse = vec4( 1.0, 0.8, 0.0, 1.0);
@@ -120,9 +125,19 @@ window.onload = function init() {
 
     projection = ortho(-1, 1, -1, 1, -100, 100);
     
-    ambientProduct = mult(lightAmbient, materialAmbient);
-    diffuseProduct = mult(lightDiffuse, materialDiffuse);
-    specularProduct = mult(lightSpecular, materialSpecular);
+    redAmbientProduct = mult(redLightAmbient, materialAmbient) ;
+    redDiffuseProduct = mult(redLightDiffuse, materialDiffuse) ;
+    redSpecularProduct = mult(redLightSpecular, materialSpecular)
+
+    greenAmbientProduct = mult(greenLightAmbient,materialAmbient);
+    greenDiffuseProduct = mult(greenLightDiffuse,materialDiffuse);
+    greenSpecularProduct =  mult(greenLightSpecular,materialSpecular);
+
+    totalAmbitentProduct = vec4(redAmbientProduct[0]+greenAmbientProduct[0],redAmbientProduct[1]+greenAmbientProduct[1],redAmbientProduct[2]+greenAmbientProduct[2],redAmbientProduct[3]+greenAmbientProduct[3]);
+    totalDiffuseProduct = vec4(redDiffuseProduct[0]+greenDiffuseProduct[0],redDiffuseProduct[1]+greenDiffuseProduct[1],redDiffuseProduct[2]+greenDiffuseProduct[2],redDiffuseProduct[3]+greenDiffuseProduct[3]);
+    totalSpecularProduct = vec4(redSpecularProduct[0]+greenSpecularProduct[0],redSpecularProduct[1]+greenSpecularProduct[1],redSpecularProduct[2]+greenSpecularProduct[2],redSpecularProduct[3]+greenSpecularProduct[3])
+
+    console.log(totalAmbitentProduct,totalDiffuseProduct,totalSpecularProduct);
 
     document.getElementById("ButtonX").onclick = function(){axis = xAxis;};
     document.getElementById("ButtonY").onclick = function(){axis = yAxis;};
@@ -130,13 +145,16 @@ window.onload = function init() {
     document.getElementById("ButtonT").onclick = function(){flag = !flag;};
 
     gl.uniform4fv(gl.getUniformLocation(program, "ambientProduct"),
-       flatten(ambientProduct));
+       flatten(totalAmbitentProduct));
     gl.uniform4fv(gl.getUniformLocation(program, "diffuseProduct"),
-       flatten(diffuseProduct) );
+       flatten(totalDiffuseProduct) );
     gl.uniform4fv(gl.getUniformLocation(program, "specularProduct"), 
-       flatten(specularProduct) );	
+       flatten(totalSpecularProduct) );	
     gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"), 
-       flatten(lightPosition) );
+       flatten(redLightPosition) );
+    gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"), 
+       flatten(greenLightPosition) );
+
        
     gl.uniform1f(gl.getUniformLocation(program, 
        "shininess"),materialShininess);
