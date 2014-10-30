@@ -19,13 +19,13 @@ var vertices = [
         vec4( 0.5, -0.5, -0.5, 1.0 )
     ];
 
-var redLightPosition = vec4(1.0, 1.0, 1.0, 1.0 );
-var redLightAmbient = vec4(0.2, 0.0, 0.0, 1.0 );
+var redLightPosition = vec4(1.0, 1.0, 1.0, 0.0 );
+var redLightAmbient = vec4(0.0, 0.0, 0.0, 1.0 );
 var redLightDiffuse = vec4( 1.0, 0.0, 0.0, 1.0 );
 var redLightSpecular = vec4( 1.0, 0.0, 0.0, 1.0 );
 
-var greenLightPosition = vec4(-1.0, -1.0, -1.0, 1.0 );
-var greenLightAmbient = vec4(0.0, 0.2, 0.0, 1.0 );
+var greenLightPosition = vec4(-1.0, -1.0, -1.0, 0.0 );
+var greenLightAmbient = vec4(0.0, 0.0, 0.0, 1.0 );
 var greenLightDiffuse = vec4( 0.0, 1.0, 0.0, 1.0 );
 var greenLightSpecular = vec4( 0.0, 1.0, 0.0, 1.0 );
 
@@ -45,6 +45,9 @@ var yAxis = 1;
 var zAxis = 2;
 var axis = 0;
 var theta =[0, 0, 0];
+
+var thetar =[0, 0, 0];
+var thetag =[0, 0, 0];
 
 var thetaLoc;
 
@@ -95,6 +98,30 @@ window.onload = function init() {
     
     gl.enable(gl.DEPTH_TEST);
 
+    var a = document.getElementById("Button1")
+    a.addEventListener("click", function(){
+        thetar[0] += 0.2;
+    });
+
+    var b = document.getElementById("Button2")
+    b.addEventListener("click", function(){
+        thetag[0] += 0.2;
+    });
+
+    document.getElementById("slideamb").onchange =
+    function() {
+        var factor = parseFloat(document.getElementById("slideamb").value);
+        redLightAmbient[0] = factor;
+        greenLightAmbient[1] = factor;
+    }
+
+    document.getElementById("slidedif").onchange =
+    function() {
+        var factor = parseFloat(document.getElementById("slidedif").value);
+        redLightDiffuse[0] = factor;
+        greenLightDiffuse[1] = factor;
+    }
+
     //
     //  Load shaders and initialize attribute buffers
     //
@@ -137,8 +164,6 @@ window.onload = function init() {
     totalDiffuseProduct = vec4(redDiffuseProduct[0]+greenDiffuseProduct[0],redDiffuseProduct[1]+greenDiffuseProduct[1],redDiffuseProduct[2]+greenDiffuseProduct[2],redDiffuseProduct[3]+greenDiffuseProduct[3]);
     totalSpecularProduct = vec4(redSpecularProduct[0]+greenSpecularProduct[0],redSpecularProduct[1]+greenSpecularProduct[1],redSpecularProduct[2]+greenSpecularProduct[2],redSpecularProduct[3]+greenSpecularProduct[3])
 
-    console.log(totalAmbitentProduct,totalDiffuseProduct,totalSpecularProduct);
-
     document.getElementById("ButtonX").onclick = function(){axis = xAxis;};
     document.getElementById("ButtonY").onclick = function(){axis = yAxis;};
     document.getElementById("ButtonZ").onclick = function(){axis = zAxis;};
@@ -151,11 +176,10 @@ window.onload = function init() {
     gl.uniform4fv(gl.getUniformLocation(program, "specularProduct"), 
        flatten(totalSpecularProduct) );	
     gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"), 
-       flatten(redLightPosition) );
-    gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"), 
        flatten(greenLightPosition) );
+    gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"), 
+       flatten(redLightPosition) );
 
-       
     gl.uniform1f(gl.getUniformLocation(program, 
        "shininess"),materialShininess);
     
@@ -175,6 +199,23 @@ var render = function(){
     modelView = mult(modelView, rotate(theta[xAxis], [1, 0, 0] ));
     modelView = mult(modelView, rotate(theta[yAxis], [0, 1, 0] ));
     modelView = mult(modelView, rotate(theta[zAxis], [0, 0, 1] ));
+
+    var r = mat4();
+    r = mult(r, rotate(thetar[0], [1, 0, 0]));
+    var g = mat4();
+    g = mult(r, rotate(thetag[0], [1, 0, 0]));
+
+    redLightPosition = r*redLightPosition;
+    greenLightPosition = g*greenLightPosition;
+
+    gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"), 
+       flatten(greenLightPosition) );
+    gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"), 
+       flatten(redLightPosition) );
+
+    // console.log(redLightPosition);
+    // console.log(greenLightPosition);
+
     
     gl.uniformMatrix4fv( gl.getUniformLocation(program,
             "modelViewMatrix"), false, flatten(modelView) );
