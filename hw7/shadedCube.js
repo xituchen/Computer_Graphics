@@ -129,7 +129,7 @@ window.onload = function init() {
     redDiffuseProduct = mult(redLightDiffuse, materialDiffuse);
     redSpecularProduct = mult(redLightSpecular, materialSpecular);
 
-    greenAmbientProduct = mult(redLightAmbient,materialAmbient);
+    greenAmbientProduct = mult(greenLightAmbient,materialAmbient);
     greenDiffuseProduct = mult(greenLightDiffuse,materialDiffuse);
     greenSpecularProduct = mult(greenLightSpecular,materialSpecular);
 
@@ -137,6 +137,42 @@ window.onload = function init() {
     document.getElementById("ButtonY").onclick = function(){axis = yAxis;};
     document.getElementById("ButtonZ").onclick = function(){axis = zAxis;};
     document.getElementById("ButtonT").onclick = function(){flag = !flag;};
+
+    document.getElementById("slideGreenAmbientLighting").onchange =
+        function() {
+            var newAmbient = parseInt(document.getElementById("slideGreenAmbientLighting").value)
+            greenLightAmbient = vec4( 0.0, newAmbient/500, 0.0, 1.0 );
+            greenAmbientProduct = mult(greenLightAmbient,materialAmbient);
+            gl.uniform4fv(gl.getUniformLocation(program, "greenAmbientProduct"),
+               flatten(greenAmbientProduct));
+        }
+
+    document.getElementById("slideGreenDiffuseLighting").onchange =
+        function() {
+            var newDiffuse = parseInt(document.getElementById("slideGreenDiffuseLighting").value)
+            greenLightDiffuse = vec4( 0.0, newDiffuse/100, 0.0, 1.0 );
+            greenDiffuseProduct = mult(greenLightDiffuse,materialDiffuse);
+            gl.uniform4fv(gl.getUniformLocation(program, "greenDiffuseProduct"),
+               flatten(greenDiffuseProduct) );
+        }
+
+    document.getElementById("slideRedAmbientLighting").onchange =
+        function() {
+            var newAmbient = parseInt(document.getElementById("slideRedAmbientLighting").value)
+            redLightAmbient = vec4( newAmbient/500,0.0, 0.0, 1.0 );
+            redAmbientProduct = mult(redLightAmbient,materialAmbient);
+            gl.uniform4fv(gl.getUniformLocation(program, "redAmbientProduct"),
+               flatten(redAmbientProduct));
+        }
+
+    document.getElementById("slideRedDiffuseLighting").onchange =
+        function() {
+            var newDiffuse = parseInt(document.getElementById("slideRedDiffuseLighting").value)
+            redLightDiffuse = vec4( newDiffuse/100,0.0, 0.0, 1.0 );
+            redDiffuseProduct = mult(redLightDiffuse,materialDiffuse);
+            gl.uniform4fv(gl.getUniformLocation(program, redDiffuseProduct),
+               flatten(redDiffuseProduct) );
+        }   
 
     gl.uniform4fv(gl.getUniformLocation(program, "redAmbientProduct"),
        flatten(redAmbientProduct));
@@ -161,7 +197,7 @@ window.onload = function init() {
     
     gl.uniformMatrix4fv( gl.getUniformLocation(program, "projectionMatrix"),
        false, flatten(projection));
-    
+
     render();
 }
 
@@ -180,7 +216,6 @@ var render = function(){
             "modelViewMatrix"), false, flatten(modelView) );
 
     gl.drawArrays( gl.TRIANGLES, 0, numVertices );
-            
-            
+
     requestAnimFrame(render);
 }
