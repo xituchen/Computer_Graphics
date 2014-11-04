@@ -43,12 +43,16 @@ var program;
 var xAxis = 0;
 var yAxis = 1;
 var zAxis = 2;
-var axis = 0;
+var cubeAxis = 0;
+var redLightAxis = 0;
+var greenLightAxis = 0;
 var theta =[0, 0, 0];
 
 var thetaLoc;
 
-var flag = true;
+var cubeFlag = true;
+var redLightFlag = true;
+var greenLightFlag = true;
 
 function quad(a, b, c, d) {
 
@@ -133,10 +137,12 @@ window.onload = function init() {
     greenDiffuseProduct = mult(greenLightDiffuse,materialDiffuse);
     greenSpecularProduct = mult(greenLightSpecular,materialSpecular);
 
-    document.getElementById("ButtonX").onclick = function(){axis = xAxis;};
-    document.getElementById("ButtonY").onclick = function(){axis = yAxis;};
-    document.getElementById("ButtonZ").onclick = function(){axis = zAxis;};
-    document.getElementById("ButtonT").onclick = function(){flag = !flag;};
+    document.getElementById("ButtonCubeX").onclick = function(){cubeAxis = xAxis;};
+    document.getElementById("ButtonCubeY").onclick = function(){cubeAxis = yAxis;};
+    document.getElementById("ButtonCubeZ").onclick = function(){cubeAxis = zAxis;};
+    document.getElementById("ButtonCubeT").onclick = function(){cubeFlag = !cubeFlag;};
+
+
 
     document.getElementById("slideGreenAmbientLighting").onchange =
         function() {
@@ -218,8 +224,13 @@ var render = function(){
             
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             
+<<<<<<< HEAD
     if(flag) theta[axis] += 2.0;
 
+=======
+    if(cubeFlag) theta[cubeAxis] += 2.0;
+            
+>>>>>>> origin/master
     modelView = mat4();
     modelView = mult(modelView, rotate(theta[xAxis], [1, 0, 0] ));
     modelView = mult(modelView, rotate(theta[yAxis], [0, 1, 0] ));
@@ -229,6 +240,8 @@ var render = function(){
             "modelViewMatrix"), false, flatten(modelView) );
 
     gl.drawArrays( gl.TRIANGLES, 0, numVertices );
+
+
 
     requestAnimFrame(render);
 }
