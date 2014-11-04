@@ -19,12 +19,12 @@ var vertices = [
         vec4( 0.5, -0.5, -0.5, 1.0 )
     ];
 
-var redLightPosition = vec4(1.0, 1.0, 1.0, 0.0 );
+var redLightPosition = vec4(1.0, -1.0, 1.0, 0.0 );
 var redLightAmbient = vec4(0.2, 0.0, 0.0, 1.0 );
 var redLightDiffuse = vec4( 1.0, 0.0, 0.0, 1.0 );
 var redLightSpecular = vec4( 1.0, 0.0, 0.0, 1.0 );
 
-var greenLightPosition = vec4(-1.0, -1.0, 1.0, 0.0 );
+var greenLightPosition = vec4(-1.0, 1.0, 1.0, 0.0 );
 var greenLightAmbient = vec4(0.0, 0.2, 0.0, 1.0 );
 var greenLightDiffuse = vec4( 0.0, 1.0, 0.0, 1.0 );
 var greenLightSpecular = vec4( 0.0, 1.0, 0.0, 1.0 );
@@ -172,6 +172,19 @@ window.onload = function init() {
             redDiffuseProduct = mult(redLightDiffuse,materialDiffuse);
             gl.uniform4fv(gl.getUniformLocation(program, redDiffuseProduct),
                flatten(redDiffuseProduct) );
+        }
+
+    document.getElementById("lightPosition").onchange =
+        function() {
+            var newPosition = parseFloat(document.getElementById("lightPosition").value)
+            redLightPosition = vec4(newPosition, -newPosition, 1.0, 0.0 );
+            greenLightPosition = vec4(-newPosition, newPosition, 1.0, 0.0 );
+            gl.uniform4fv(gl.getUniformLocation(program, redLightPosition),
+               flatten(redLightPosition));
+            gl.uniform4fv(gl.getUniformLocation(program, greenLightPosition),
+               flatten(greenLightPosition));
+            console.log(redLightPosition);
+            console.log(greenLightPosition);
         }   
 
     gl.uniform4fv(gl.getUniformLocation(program, "redAmbientProduct"),
@@ -206,12 +219,12 @@ var render = function(){
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             
     if(flag) theta[axis] += 2.0;
-            
+
     modelView = mat4();
     modelView = mult(modelView, rotate(theta[xAxis], [1, 0, 0] ));
     modelView = mult(modelView, rotate(theta[yAxis], [0, 1, 0] ));
     modelView = mult(modelView, rotate(theta[zAxis], [0, 0, 1] ));
-    
+
     gl.uniformMatrix4fv( gl.getUniformLocation(program,
             "modelViewMatrix"), false, flatten(modelView) );
 

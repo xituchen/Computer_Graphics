@@ -34,6 +34,7 @@
 Oops ... your browser doesn't support the HTML5 canvas element
 </canvas>
 </div>
+
 <div>
 <!-- <select id = "mymenu" size = "7">
     <option value = "0">Black</option>
@@ -44,16 +45,29 @@ Oops ... your browser doesn't support the HTML5 canvas element
     <option value = "5">Magenta</option>
     <option value = "6">Cyan</option>
 </select> -->
-<button id = "Button1">End Polygon</button>
+    <table border="0" style="width:0%;padding:8px">
+        <button id = "Button1" style="margin-top:10px">End Polygon</button>
+        <button id = "Button2" style="margin-top:10px;margin-left:320px">Clear Canvas</button>
+    </table>
 </div>
 <div>
-0 <input id = "slideR" type="range"
-min = "0" max="255" step="1" value="0" /> 255 R<br/>
-0 <input id = "slideG" type="range"
-min = "0" max="255" step="1" value="0" /> 255 G<br/>
-0 <input id = "slideB" type="range"
-min = "0" max="255" step="1" value="0" /> 255 B
+    <table border="0" style="width:0%;padding:8px">
+        <tr>
+            <td>
+                0 <input id = "slideR" type="range"
+                min = "0" max="255" step="1" value="0" /> 255 R<br/>
+                0 <input id = "slideG" type="range"
+                min = "0" max="255" step="1" value="0" /> 255 G<br/>
+                0 <input id = "slideB" type="range"
+                min = "0" max="255" step="1" value="0" /> 255 B
+            </td>
+            <td style="width:30px">
+            </td>
+            <td id="colorSample" style="width:274px;height:100px;background-color: #000000">
+            </td>
+
+        </tr>
+    </table>
 </div>
-<div id = "colorSample" style="width:200px;height:100px;background-color: #000000"></div>
 </body>
 </html>

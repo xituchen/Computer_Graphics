@@ -1,3 +1,4 @@
+// Computer Graphics Homework 5 by Anli Ji and Xitu Chen
 
 var canvas;
 var gl;
@@ -5,23 +6,11 @@ var gl;
 var maxNumVertices  = 200;
 var index = 0;
 
-// var cindex = 0;
-
 var componentR = 0.0
 var componentG = 0.0
 var componentB = 0.0
 var sliderColor = vec4(0.0,0.0,0.0,1.0)
 
-// var colors = [
-
-//     vec4( 0.0, 0.0, 0.0, 1.0 ),  // black
-//     vec4( 1.0, 0.0, 0.0, 1.0 ),  // red
-//     vec4( 1.0, 1.0, 0.0, 1.0 ),  // yellow
-//     vec4( 0.0, 1.0, 0.0, 1.0 ),  // green
-//     vec4( 0.0, 0.0, 1.0, 1.0 ),  // blue
-//     vec4( 1.0, 0.0, 1.0, 1.0 ),  // magenta
-//     vec4( 0.0, 1.0, 1.0, 1.0)   // cyan
-// ];    
 var t;
 var numPolygons = 0;
 var numIndices = [];
@@ -42,14 +31,8 @@ window.onload = function init() {
     
     gl = WebGLUtils.setupWebGL( canvas );
     if ( !gl ) { alert( "WebGL isn't available" ); }
-    
-    // var m = document.getElementById("mymenu");
-    
-    // m.addEventListener("click", function() {
-    //    cindex = m.selectedIndex;
-    //     });
 
-    document.getElementById("slideR").onchange =
+    var slide_r = document.getElementById("slideR").onchange =
         function() {
             componentR = parseInt(document.getElementById("slideR").value)
             sliderColor = vec4(componentR/255,componentG/255,componentB/255,1.0)
@@ -57,7 +40,7 @@ window.onload = function init() {
             document.getElementById("colorSample").style.backgroundColor = rgbToHex(componentR,componentG,componentB)            
         }
 
-    document.getElementById("slideG").onchange =
+    var slide_g = document.getElementById("slideG").onchange =
         function() {
             componentG = parseInt(document.getElementById("slideG").value)
             sliderColor = vec4(componentR/255,componentG/255,componentB/255,1.0)
@@ -66,7 +49,7 @@ window.onload = function init() {
 
         }
 
-    document.getElementById("slideB").onchange =
+    var slide_b = document.getElementById("slideB").onchange =
         function() {
             componentB = parseInt(document.getElementById("slideB").value)
             sliderColor = vec4(componentR/255,componentG/255,componentB/255,1.0)
@@ -79,6 +62,19 @@ window.onload = function init() {
         numPolygons++;
         numIndices[numPolygons] = 0;
         start[numPolygons] = index;
+        render();
+    });
+
+    var b = document.getElementById("Button2")
+    b.addEventListener("click", function(){
+        // location.reload();
+        index = 0;
+        numPolygons = 0;
+        numIndices = [];
+        numIndices[0] = 0;
+        start = [0];
+
+        gl.clear(gl.FRAMEBUFFER);
         render();
     });
 
