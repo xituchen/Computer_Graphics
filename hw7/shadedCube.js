@@ -142,8 +142,6 @@ window.onload = function init() {
     document.getElementById("ButtonCubeZ").onclick = function(){cubeAxis = zAxis;};
     document.getElementById("ButtonCubeT").onclick = function(){cubeFlag = !cubeFlag;};
 
-
-
     document.getElementById("slideGreenAmbientLighting").onchange =
         function() {
             var newAmbient = parseInt(document.getElementById("slideGreenAmbientLighting").value)
@@ -223,14 +221,9 @@ window.onload = function init() {
 var render = function(){
             
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            
-<<<<<<< HEAD
-    if(flag) theta[axis] += 2.0;
 
-=======
     if(cubeFlag) theta[cubeAxis] += 2.0;
-            
->>>>>>> origin/master
+
     modelView = mat4();
     modelView = mult(modelView, rotate(theta[xAxis], [1, 0, 0] ));
     modelView = mult(modelView, rotate(theta[yAxis], [0, 1, 0] ));
