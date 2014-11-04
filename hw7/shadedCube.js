@@ -133,10 +133,10 @@ window.onload = function init() {
     greenDiffuseProduct = mult(greenLightDiffuse,materialDiffuse);
     greenSpecularProduct = mult(greenLightSpecular,materialSpecular);
 
-    document.getElementById("ButtonX").onclick = function(){axis = xAxis;};
-    document.getElementById("ButtonY").onclick = function(){axis = yAxis;};
-    document.getElementById("ButtonZ").onclick = function(){axis = zAxis;};
-    document.getElementById("ButtonT").onclick = function(){flag = !flag;};
+    document.getElementById("ButtonCubeX").onclick = function(){axis = xAxis;};
+    document.getElementById("ButtonCubeY").onclick = function(){axis = yAxis;};
+    document.getElementById("ButtonCubeZ").onclick = function(){axis = zAxis;};
+    document.getElementById("ButtonCubeT").onclick = function(){flag = !flag;};
 
     document.getElementById("slideGreenAmbientLighting").onchange =
         function() {
