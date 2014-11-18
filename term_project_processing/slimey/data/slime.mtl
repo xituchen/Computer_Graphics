@@ -1,0 +1,8 @@
+newmtl slime:initialShadingGroup
+illum 4
+Kd 1.00 1.00 1.00
+Ka 0.00 0.00 0.00
+Tf 0.66 0.66 0.66
+Ni 1.59
+Ks 0.50 0.50 0.50
+Ns 18.00
