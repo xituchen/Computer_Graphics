@@ -44,9 +44,9 @@ class Slimu {
     translate(width/2, height/2, 0);
     rotateX(radians(180));
     rot = new PMatrix3D();
-    rot.rotateX(radians(rX));
-    rot.rotateY(radians(rY));
-    rot.rotateZ(radians(rZ));
+    rot.rotateX(radians(dx));
+    rot.rotateY(radians(dy));
+    rot.rotateZ(radians(dz));
     
     for (int i=0; i<numVerts; i++) {
       PVector n = new PVector();
@@ -54,14 +54,7 @@ class Slimu {
       thing.setVertex(i, n);
     }
     
-    rX += dx;
-    rY += dy;
-    rZ += dz;
-    
-    horizontal = 300 + displacement("horizontal");
-    vertical = 200 + displacement("vertical");
-    
-    shape(thing, 0, 0, horizontal, vertical);
+    shape(thing);
   }
   
   public void getAllTheVerts() {
@@ -80,7 +73,8 @@ class Slimu {
   }
   
   public void getGuys(int x, int y) {
-    PVector pointing = new PVector(x, y, center.z);
+    center();
+    PVector pointing = new PVector(x-width/2, height-y-height/2, center.z);
     int you = 0;
     float min = 1000.0;
     ArrayList<PVector> neighbors = new ArrayList<PVector>();
@@ -98,6 +92,7 @@ class Slimu {
     select = thing.getVertex(you);
     circle.append(you);
     int loop = 0;
+    println("where i actually meant: ", pointing);
     println("where i hit: ", select);
     println("minimum distance: ", min);
     println();
@@ -136,14 +131,57 @@ class Slimu {
       println(neighbors.get(a));
     }
     
-    deform();
+    extrude();
   }
   
-  public void deform() {
-    select.x += 20;
-    select.y += 10;
+  public void center() {
+    float sum_x = 0.0;
+    float sum_y = 0.0;
+    float sum_z = 0.0;
+
+    for (int i=0; i<numVerts; i++) {
+      sum_x += thing.getVertex(i).x;
+      sum_y += thing.getVertex(i).y;
+      sum_z += thing.getVertex(i).z;
+    }
+    sum_x = sum_x/numVerts;
+    sum_y = sum_y/numVerts;
+    sum_z = sum_z/numVerts;
+    
+    center = new PVector(sum_x, sum_y, sum_z);
+  }
+  
+  public void extrude() {
+    float a = select.x - center.x;
+    float b = select.y - center.y;
+    float c = select.z - center.z;
+
+    PVector delta = new PVector(a, b, c);
+    delta.normalize();
+    delta.mult(50);
+    
+    println("change: ", delta);
+    
+    select.add(delta);
+    
     for (int i=0; i<apex.size(); i++) {
       thing.setVertex(apex.get(i), select);
+    }
+    
+    for (int j=0; j<circle.size(); j++) {
+      PVector k = thing.getVertex(circle.get(j));
+      float d = k.x - center.x;
+      float e = k.y - center.y;
+      float f = k.z - center.z;
+  
+      PVector delt = new PVector(d, e, f);
+      delt.normalize();
+      delt.mult(20);
+      
+      println("change: ", delt);
+      
+      k.add(delt);
+      thing.setVertex(circle.get(j), k);
     }
   }
   

@@ -41,17 +41,6 @@ void draw() {
   shape(ground, 0, 0);
 }
 
-int displacement(String which) {
-  int dsize = 0;
-  if (which == "horizontal") {
-      dsize = (int)(20*sin(5*radians(frameCount%360)));
-  }
-  else {
-      dsize = -(int)(30*sin(5*radians(frameCount%360)));
-  }
-  return dsize;
-}
-
 void keyPressed() {
     if (key == 'w') {
       arf.dx += 0.5;
@@ -79,5 +68,6 @@ void mousePressed() {
   }
   
   println("200: ", arf.thing.getVertex(200));
+  println('\n');
 }
 
