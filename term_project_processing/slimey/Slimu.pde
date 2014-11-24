@@ -1,13 +1,11 @@
 class Slimu {
-  public PShape original;
   public PShape thing;
-  public int numVerts;
   public float dx, dy, dz;
-  public int horizontal, vertical;
+  private int numVerts;
+  private PShape original;
   private PVector center;
   private PVector select;
-  private IntList circle;
-  private IntList apex;
+  private PVector mouse;
   private int upper, lower, left, right, front;
   private PMatrix3D rot;
   private PrintWriter doVerts;
@@ -33,8 +31,6 @@ class Slimu {
     left = 0;
     right = 0;
     front = 0;
-    horizontal = 300;
-    vertical = 200;
     
     center();
   }
@@ -43,6 +39,9 @@ class Slimu {
     translate(width/2, height/2, 0);
     rotateX(radians(180));
     rot = new PMatrix3D();
+//    rot.scale(1+(0.01*(sin(5*radians(frameCount%360)))), 
+//              1-(0.01*(sin(5*radians(frameCount%360)))), 
+//              1+(0.01*(sin(5*radians(frameCount%360)))));
     rot.rotateX(radians(dx));
     rot.rotateY(radians(dy));
     rot.rotateZ(radians(dz));
@@ -52,7 +51,6 @@ class Slimu {
       rot.mult(thing.getVertex(i), n);
       thing.setVertex(i, n);
     }
-    
     shape(thing);
   }
   
@@ -67,54 +65,51 @@ class Slimu {
     }
   }
   
-  public void getAllTheVerts() {
-    doVerts = createWriter("slime_verts.txt");
-    
-    for (int i=0; i<thing.getChildCount(); i++) {
-      PShape child = thing.getChild(i);
-      for (int j=0; j<child.getVertexCount(); j++) {
-        PVector v = child.getVertex(j);
-        String aVert = str(v.x) + " " + str(v.y) + " " + str(v.z) + " ";
-        doVerts.println(aVert);
-      }
-    }
-    doVerts.flush();
-    doVerts.close();
-  }
-  
-  public void getGuys(int x, int y, boolean dowhat) {
+  public void justDoIt(int x, int y, int dowhat) {
     center();
-    PVector pointing = new PVector(x-width/2, height-y-height/2);
+    mouse = new PVector(x-width/2, height-y-height/2);
     int you = 0;
     float min = 1000;
-    ArrayList<PVector> neighbors = new ArrayList<PVector>();
-    circle = new IntList();
-    apex = new IntList();
+    float sides = max(thing.getVertex(left).z, thing.getVertex(right).z);
 
     for (int i=0; i<numVerts; i++) {
       PVector current = thing.getVertex(i);
       PVector justaplane = new PVector(current.x, current.y);
-      float d = justaplane.dist(pointing);
-      if (d<min && current.z<thing.getVertex(left).z) {
+      float d = justaplane.dist(mouse);
+      if (d<min && current.z<sides) {
           you = i;
           min = d;
       }
     }
     
     select = thing.getVertex(you);
-    int loop = 0;
-    println("where i actually meant: ", pointing);
+
+    println("where i actually meant: ", mouse);
     println("where i hit: ", select);
-    println("minimum distance: ", select.dist(pointing));
+    println("minimum distance: ", select.dist(mouse));
     println();
     
+    if (dowhat == 3) {
+      smoooth(you, 2);
+    }
+    else {
+      deform(dowhat, getJustMe(select), getNeighbors(you));
+      smoooth(you, 2);
+    }
+  }
+  
+  private IntList getNeighbors(int me) {
+    ArrayList<PVector> neighbors = new ArrayList<PVector>();
+    IntList n_index = new IntList();
+    
+    PVector s = thing.getVertex(me);
+    int loop = 0;
     
     while (loop<numVerts) {
       boolean gotcha = false;
       
       for (int j=0; j<3; j++) {
-        if (thing.getVertex(loop+j).equals(select)) {
-          apex.append(loop+j);
+        if (thing.getVertex(loop+j).equals(s)) {
           gotcha = true;
           break;
         }
@@ -127,20 +122,20 @@ class Slimu {
         temp.add(thing.getVertex(loop+2));
         for (int k=0; k<3; k++) {
           // if vertex is not the selected one and is not in the array yet, put it in
-          if (temp.get(k).equals(select) == false && neighbors.contains(temp.get(k)) == false) {
+          if (temp.get(k).equals(s) == false && neighbors.contains(temp.get(k)) == false) {
             neighbors.add(temp.get(k));
-            circle.append(loop+k);
+            n_index.append(loop+k);
           }
         }
       }
       loop += 3;
     }
     
-    for (int a=0; a<neighbors.size(); a++) {
-      println(neighbors.get(a));
-    }
+//    for (int a=0; a<neighbors.size(); a++) {
+//      println(neighbors.get(a));
+//    }
     
-    deform(dowhat);
+    return n_index;
   }
   
   private void center() {
@@ -176,21 +171,16 @@ class Slimu {
     return allMe;
   }
   
-  private void deform(boolean dowhat) {
-    println("selected: ", select);
-    println("oh really? ", apex);
-    for (int i=0; i<apex.size(); i++) {
-      println("   ", thing.getVertex(apex.get(i)));
-    }
-    
+  private void deform(int dowhat, IntList apex, IntList circle) {
     float a = select.x - center.x;
     float b = select.y - center.y;
     float c = select.z - center.z;
+    float amount = mouse.dist(new PVector(select.x, select.y));
 
     PVector delta = new PVector(a, b, c);
     delta.normalize();
-    delta.mult(15);
-    if (dowhat == false) {
+    delta.mult(5);
+    if (dowhat == 2) {
       delta.mult(-1);
     }
     
@@ -211,8 +201,8 @@ class Slimu {
   
       PVector delt = new PVector(d, e, f);
       delt.normalize();
-      delt.mult(10);
-      if (dowhat == false) {
+      delt.mult(3);
+      if (dowhat == 2) {
         delt.mult(-1);
       }
       
@@ -224,6 +214,57 @@ class Slimu {
         thing.setVertex(sobeit.get(p), k);
       }
     }
+  }
+  
+  private void smoooth(int v, int layer) {
+    if (layer == 0) {return;}
+    
+    IntList neighbors = getNeighbors(v);
+    if (neighbors.size()==0) {return;}
+    
+    for (int i=0; i<neighbors.size(); i++) {
+      smoooth(neighbors.get(i), layer-1);
+    }
+    
+    float sum_x = 0.0;
+    float sum_y = 0.0;
+    float sum_z = 0.0;
+    for (int i=0; i<neighbors.size(); i++) {
+      PVector a = thing.getVertex(neighbors.get(i));
+      sum_x += a.x;
+      sum_y += a.y;
+      sum_z += a.z;
+    }
+    
+    PVector myself = thing.getVertex(v);
+    sum_x = ((sum_x/neighbors.size())+(20*myself.x))/21;
+    sum_y = ((sum_y/neighbors.size())+(20*myself.y))/21;
+    sum_z = ((sum_z/neighbors.size())+(20*myself.z))/21;
+    
+    PVector n = new PVector(sum_x, sum_y, sum_z);
+    println("old me(", v, "): ", thing.getVertex(v));
+    
+    IntList me = getJustMe(thing.getVertex(v));
+    for (int j=0; j<me.size(); j++) {
+      thing.setVertex(me.get(j), n);
+    }
+    println("new me(", v, "): ", thing.getVertex(me.get(0)));
+    
+  }
+  
+  public void getAllTheVerts() {
+    doVerts = createWriter("slime_verts.txt");
+    
+    for (int i=0; i<thing.getChildCount(); i++) {
+      PShape child = thing.getChild(i);
+      for (int j=0; j<child.getVertexCount(); j++) {
+        PVector v = child.getVertex(j);
+        String aVert = str(v.x) + " " + str(v.y) + " " + str(v.z) + " ";
+        doVerts.println(aVert);
+      }
+    }
+    doVerts.flush();
+    doVerts.close();
   }
   
 }

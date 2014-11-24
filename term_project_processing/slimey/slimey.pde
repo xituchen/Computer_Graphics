@@ -4,24 +4,16 @@ PShape slime;
 Slimu arf;
 PShape ground;
 boolean light = false;
-boolean pull = true;
+int action = 1;
 
 void setup() {
-  size(1080, 720, P3D);   
-  fill(170, 230, 240);
-  noStroke();
-  ground = createShape();
-  ground.beginShape(TRIANGLE_FAN);
-  ground.vertex(-256, -200, 256);
-  ground.vertex(-256, -150, -256);
-  ground.vertex(256, -150, -256);
-  ground.vertex(256, -200, 256);
-  ground.endShape(CLOSE);
+  size(1280, 860, P3D);
   
+//  parse vertex data
   String[] allData = loadStrings("slime_verts.txt");
   
   stroke(255);
-  fill(180, 230, 250, 70);
+  fill(150, 180, 180, 85);
   slime = createShape();
   slime.beginShape(TRIANGLES);
   
@@ -36,44 +28,60 @@ void setup() {
   frameRate(24);
 }
 
+
 void draw() {
   background(50);
   stroke(255);
   ellipseMode(CENTER);
   
-  if (inCircle(1000, 80)) {
+//  reset button
+  if (inCircle(1200, 80)) {
     textSize(12);
     fill(255);
-    text("reset", 940, 80);
+    text("reset", 1140, 80);
     fill(185, 100, 140);
   }
   else {noFill();}
-  ellipse(1000, 80, 50, 50);
+  ellipse(1200, 80, 50, 50);
   
-  if (inCircle(1000, 160)) {
+//  carve button
+  if (inCircle(1200, 160)) {
     textSize(12);
     fill(255);
-    text("carve", 940, 160);
+    text("carve", 1140, 160);
     fill(220, 200, 120);
   }
-  else if (pull == false) {fill(120, 150, 180);}
+  else if (action == 2) {fill(120, 150, 180);}
   else {noFill();}
-  ellipse(1000, 160, 50, 50);
+  ellipse(1200, 160, 50, 50);
   
-  if (inCircle(1000, 240)) {
+//  pull button
+  if (inCircle(1200, 240)) {
     textSize(12);
     fill(255);
-    text("pull", 940, 240);
+    text("pull", 1148, 240);
     fill(220, 200, 120);
   }
-  else if (pull == true) {fill(100, 200, 160);}
+  else if (action == 1) {fill(100, 200, 160);}
   else {noFill();}
-  ellipse(1000, 240, 50, 50);
+  ellipse(1200, 240, 50, 50);
+  
+//  smooth button
+  if (inCircle(1200, 320)) {
+    textSize(12);
+    fill(255);
+    text("smooth", 1130, 320);
+    fill(220, 200, 120);
+  }
+  else if (action == 3) {fill(150, 110, 190);}
+  else {noFill();}
+  ellipse(1200, 320, 50, 50);
   
   lights();
   arf.display();
 }
 
+// rotation
 void keyPressed() {
     if (key == 'w') {
       arf.dx += 0.5;
@@ -95,25 +103,29 @@ void keyPressed() {
     }
 }
 
+// commands
 void mousePressed() {
-  if (inCircle(1000, 80)) {
+  if (inCircle(1200, 80)) {
     arf.reset();
   }
-  else if(inCircle(1000, 160)) {
-    pull = false;
+  else if(inCircle(1200, 160)) {
+    action = 2;
   }
-  else if(inCircle(1000, 240)) {
-    pull = true;
+  else if(inCircle(1200, 240)) {
+    action = 1;
   }
-  else {
-    arf.getGuys(mouseX, mouseY, pull);  
+  else if(inCircle(1200, 320)) {
+    action = 3;
   }
-  
-  println("200: ", arf.thing.getVertex(200));
-  println("pull? ", pull);
-  println('\n');
 }
 
+void mouseDragged() {
+  if (!inCircle(1200, 80) && !inCircle(1200, 160) && !inCircle(1200, 240) && !inCircle(1200, 320)) {
+    arf.justDoIt(pmouseX, pmouseY, action);
+  }
+}
+
+// check if mouse is in a circle button
 boolean inCircle(int x, int y) {
   float dX = x - mouseX;
   float dY = y - mouseY;
