@@ -1,15 +1,19 @@
 class Slimu {
   public PShape thing;
   public float dx, dy, dz;
-  private int numVerts;
+  public int numVerts;
   private PShape original;
   private PVector center;
   private PVector select;
   private PVector mouse;
-  private int upper, lower, left, right, front;
+  public int upper, lower, left, right, front;
   private PMatrix3D rot;
   private PrintWriter doVerts;
   
+//  PShape thing: the 3D shape
+//  PShape original: original state of thing
+//  float dx, dy, dz: angle of rotation
+//  int upper, lower, left, right, front: bounds
   public Slimu(PShape s) {
     thing = s;
     numVerts = thing.getVertexCount();
@@ -35,6 +39,7 @@ class Slimu {
     center();
   }
   
+//  PMatrix3D rot: transformation matrix
   public void display() {
     translate(width/2, height/2, 0);
     rotateX(radians(180));
@@ -54,6 +59,7 @@ class Slimu {
     shape(thing);
   }
   
+//  resets thing to its original state
   public void reset() {
     dx = 0.0;
     dy = 0.0;
@@ -65,13 +71,18 @@ class Slimu {
     }
   }
   
+//  method that does mouse selection and delegates deformation action
+//  int x, y: mouseX and mouseY
+//  int dowhat: action code, 1 - pull, 2 - carve, 3 - smooth
   public void justDoIt(int x, int y, int dowhat) {
     center();
     mouse = new PVector(x-width/2, height-y-height/2);
     int you = 0;
     float min = 1000;
     float sides = max(thing.getVertex(left).z, thing.getVertex(right).z);
-
+    
+//  finds the closest vertex in terms of the xy-plane that is also 
+//  closest to the viewer
     for (int i=0; i<numVerts; i++) {
       PVector current = thing.getVertex(i);
       PVector justaplane = new PVector(current.x, current.y);
@@ -82,6 +93,7 @@ class Slimu {
       }
     }
     
+//  selected vertex  
     select = thing.getVertex(you);
 
     println("where i actually meant: ", mouse);
@@ -98,6 +110,7 @@ class Slimu {
     }
   }
   
+//  returns list of integer index of unique neighbors of vertex with index me
   private IntList getNeighbors(int me) {
     ArrayList<PVector> neighbors = new ArrayList<PVector>();
     IntList n_index = new IntList();
@@ -137,7 +150,8 @@ class Slimu {
     
     return n_index;
   }
-  
+ 
+// Calculates center and bounds of the shape 
   private void center() {
     float sum_x = 0.0;
     float sum_y = 0.0;
@@ -161,6 +175,7 @@ class Slimu {
     center = new PVector(sum_x, sum_y, sum_z);
   }
   
+// returns list of indices of vertices with the same value as me 
   private IntList getJustMe(PVector me) {
     IntList allMe = new IntList();
     for (int i=0; i<numVerts; i++) {
@@ -171,6 +186,9 @@ class Slimu {
     return allMe;
   }
   
+// apex: list of the indices of selected vertex
+// circle: list of indices of unique neighbors of selected vertex
+// dowhat: action code, 1 - pull, 2 - carve
   private void deform(int dowhat, IntList apex, IntList circle) {
     float a = select.x - center.x;
     float b = select.y - center.y;
@@ -215,7 +233,8 @@ class Slimu {
       }
     }
   }
-  
+
+// smooths around vertex v with a degree of layer  
   private void smoooth(int v, int layer) {
     if (layer == 0) {return;}
     
@@ -242,16 +261,18 @@ class Slimu {
     sum_z = ((sum_z/neighbors.size())+(20*myself.z))/21;
     
     PVector n = new PVector(sum_x, sum_y, sum_z);
-    println("old me(", v, "): ", thing.getVertex(v));
+//    println("old me(", v, "): ", thing.getVertex(v));
     
     IntList me = getJustMe(thing.getVertex(v));
     for (int j=0; j<me.size(); j++) {
       thing.setVertex(me.get(j), n);
     }
-    println("new me(", v, "): ", thing.getVertex(me.get(0)));
+//    println("new me(", v, "): ", thing.getVertex(me.get(0)));
     
   }
   
+// this is...a helper function that takes a shape loaded from obj 
+// and writes vertex informaiton to a .txt file  
   public void getAllTheVerts() {
     doVerts = createWriter("slime_verts.txt");
     

@@ -1,9 +1,13 @@
+import nervoussystem.obj.*;
+
 float dx, dy, dz;
 int action = 1;
 boolean paause;
 PShape slime;
 Pair smooth, carve, pull, reset, pause, save;
 Slimu arf;
+
+String tips = "AD - rotate x WS - rotate y QE - rotate z";
 
 void setup() {
   size(1280, 860, P3D);
@@ -47,8 +51,12 @@ void setup() {
 
 void draw() {
   background(50);
+  
+  textSize(12);
+  fill(255);
+  text(tips, 80, 780, 90, 90);
   stroke(255);
-  smooth();
+
   ellipseMode(CENTER);
   
   //  smooth button
@@ -84,7 +92,7 @@ void draw() {
   else {noFill();}
   ellipse(pull.x, pull.y, 50, 50);
   
-  //  pause button
+//  pause button
   if (inCircle(pause.x, pause.y)) {
     textSize(12);
     fill(255);
@@ -116,7 +124,7 @@ void draw() {
     textSize(12);
     fill(255);
     text("save", 1143, save.y);
-    fill(185, 100, 140);
+    fill(230, 160, 120);
   }
   else {noFill();}
   ellipse(save.x, save.y, 50, 50);
@@ -189,6 +197,27 @@ void mousePressed() {
       arf.dz = dz;
     }
   }
+  else if(inCircle(save.x, save.y)) {
+    println("w: ", width);
+    println("h: ", height);
+    OBJExport obj = (OBJExport)createGraphics(300, 200, "nervoussystem.obj.OBJExport", "test.obj");
+    obj.setColor(true);
+    obj.beginDraw();
+    drawSlime(obj);
+    obj.endDraw();
+    obj.dispose();
+  }
+}
+
+// function that creates shape to be saved
+void drawSlime(PGraphics pg) {
+  pg.beginShape(TRIANGLES);
+  pg.fill(150, 180, 180);
+  for (int i=0; i<arf.numVerts; i++) {
+    PVector n = arf.thing.getVertex(i);
+    pg.vertex(n.x, n.y, n.z);
+  }
+  pg.endShape();
 }
 
 void mouseDragged() {
@@ -196,7 +225,8 @@ void mouseDragged() {
       !inCircle(smooth.x, smooth.y) && 
       !inCircle(carve.x, carve.y) && 
       !inCircle(pull.x, pull.y) &&
-      !inCircle(pause.x, pause.y)) {
+      !inCircle(pause.x, pause.y) &&
+      !inCircle(save.x, save.y)) {
     arf.justDoIt(pmouseX, pmouseY, action);
   }
 }
