@@ -48,7 +48,6 @@ void setup() {
 void draw() {
   background(50);
   stroke(255);
-  smooth();
   ellipseMode(CENTER);
   
   //  smooth button
@@ -92,6 +91,7 @@ void draw() {
     else {text("play", 1145, pause.y);}
     fill(120);
   }
+  else if (paause) {fill(100, 200, 160);}
   else {noFill();}
   ellipse(pause.x, pause.y, 50, 50);
   if (!paause) {
@@ -99,15 +99,6 @@ void draw() {
     fill(255);
     rectMode(CENTER);
     rect(pause.x, pause.y, 20, 20);
-  }
-  else {
-    noStroke();
-    fill(255);
-    beginShape();
-    vertex(pause.x-8, pause.y-10);
-    vertex(pause.x+12, pause.y);
-    vertex(pause.x-8, pause.y+10);
-    endShape(CLOSE);
   }
   
   stroke(255);
