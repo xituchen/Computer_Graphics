@@ -1,9 +1,13 @@
+import nervoussystem.obj.*;
+
 float dx, dy, dz;
 int action = 1;
 boolean paause;
 PShape slime;
 Pair smooth, carve, pull, reset, pause, save;
 Slimu arf;
+
+String tips = "AD - rotate x WS - rotate y QE - rotate z scroll - scale";
 
 void setup() {
   size(1280, 860, P3D);
@@ -47,7 +51,12 @@ void setup() {
 
 void draw() {
   background(50);
+  
+  textSize(12);
+  fill(255);
+  text(tips, 80, 780, 90, 90);
   stroke(255);
+
   ellipseMode(CENTER);
   
   //  smooth button
@@ -68,7 +77,7 @@ void draw() {
     text("carve", 1140, carve.y);
     fill(220, 200, 120);
   }
-  else if (action == 2) {fill(120, 150, 180);}
+  else if (action == 2) {fill(120, 150, 200);}
   else {noFill();}
   ellipse(carve.x, carve.y, 50, 50);
   
@@ -79,19 +88,18 @@ void draw() {
     text("pull", 1148, pull.y);
     fill(220, 200, 120);
   }
-  else if (action == 1) {fill(100, 200, 160);}
+  else if (action == 1) {fill(120, 185, 160);}
   else {noFill();}
   ellipse(pull.x, pull.y, 50, 50);
   
-  //  pause button
+//  pause button
   if (inCircle(pause.x, pause.y)) {
     textSize(12);
     fill(255);
     if (!paause) {text("pause", 1135, pause.y);}
     else {text("play", 1145, pause.y);}
-    fill(120);
+    fill(160, 185, 120);
   }
-  else if (paause) {fill(100, 200, 160);}
   else {noFill();}
   ellipse(pause.x, pause.y, 50, 50);
   if (!paause) {
@@ -100,6 +108,15 @@ void draw() {
     rectMode(CENTER);
     rect(pause.x, pause.y, 20, 20);
   }
+  else {
+    noStroke();
+    fill(255);
+    beginShape();
+    vertex(pause.x-8, pause.y-10);
+    vertex(pause.x+12, pause.y);
+    vertex(pause.x-8, pause.y+10);
+    endShape(CLOSE);
+  }
   
   stroke(255);
   //  save button
@@ -107,7 +124,7 @@ void draw() {
     textSize(12);
     fill(255);
     text("save", 1143, save.y);
-    fill(185, 100, 140);
+    fill(230, 160, 120);
   }
   else {noFill();}
   ellipse(save.x, save.y, 50, 50);
@@ -180,6 +197,27 @@ void mousePressed() {
       arf.dz = dz;
     }
   }
+  else if(inCircle(save.x, save.y)) {
+    println("w: ", width);
+    println("h: ", height);
+    OBJExport obj = (OBJExport)createGraphics(300, 200, "nervoussystem.obj.OBJExport", "test.obj");
+    obj.setColor(true);
+    obj.beginDraw();
+    drawSlime(obj);
+    obj.endDraw();
+    obj.dispose();
+  }
+}
+
+// function that creates shape to be saved
+void drawSlime(PGraphics pg) {
+  pg.beginShape(TRIANGLES);
+  pg.fill(150, 180, 180);
+  for (int i=0; i<arf.numVerts; i++) {
+    PVector n = arf.thing.getVertex(i);
+    pg.vertex(n.x, n.y, n.z);
+  }
+  pg.endShape();
 }
 
 void mouseDragged() {
@@ -187,7 +225,8 @@ void mouseDragged() {
       !inCircle(smooth.x, smooth.y) && 
       !inCircle(carve.x, carve.y) && 
       !inCircle(pull.x, pull.y) &&
-      !inCircle(pause.x, pause.y)) {
+      !inCircle(pause.x, pause.y) &&
+      !inCircle(save.x, save.y)) {
     arf.justDoIt(pmouseX, pmouseY, action);
   }
 }

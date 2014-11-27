@@ -7,7 +7,7 @@ PShape slime;
 Pair smooth, carve, pull, reset, pause, save;
 Slimu arf;
 
-String tips = "AD - rotate x WS - rotate y QE - rotate z";
+String tips = "AD - rotate x WS - rotate y QE - rotate z scroll - scale";
 
 void setup() {
   size(1280, 860, P3D);
@@ -77,7 +77,7 @@ void draw() {
     text("carve", 1140, carve.y);
     fill(220, 200, 120);
   }
-  else if (action == 2) {fill(120, 150, 180);}
+  else if (action == 2) {fill(120, 150, 200);}
   else {noFill();}
   ellipse(carve.x, carve.y, 50, 50);
   
@@ -88,7 +88,7 @@ void draw() {
     text("pull", 1148, pull.y);
     fill(220, 200, 120);
   }
-  else if (action == 1) {fill(100, 200, 160);}
+  else if (action == 1) {fill(120, 185, 160);}
   else {noFill();}
   ellipse(pull.x, pull.y, 50, 50);
   
@@ -98,7 +98,7 @@ void draw() {
     fill(255);
     if (!paause) {text("pause", 1135, pause.y);}
     else {text("play", 1145, pause.y);}
-    fill(120);
+    fill(160, 185, 120);
   }
   else {noFill();}
   ellipse(pause.x, pause.y, 50, 50);

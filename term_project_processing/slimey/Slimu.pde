@@ -1,6 +1,9 @@
-class Slimu {
+import java.awt.event.*;
+
+class Slimu implements MouseWheelListener{
   public PShape thing;
   public float dx, dy, dz;
+  public float scaler;
   public int numVerts;
   private PShape original;
   private PVector center;
@@ -15,6 +18,8 @@ class Slimu {
 //  float dx, dy, dz: angle of rotation
 //  int upper, lower, left, right, front: bounds
   public Slimu(PShape s) {
+    addMouseWheelListener(this);
+    
     thing = s;
     numVerts = thing.getVertexCount();
     original = createShape();
@@ -30,6 +35,7 @@ class Slimu {
     dx = 0.0;
     dy = 0.0;
     dz = 0.0;
+    scaler = 1.0;
     upper = 0;
     lower = 0;
     left = 0;
@@ -44,6 +50,7 @@ class Slimu {
     translate(width/2, height/2, 0);
     rotateX(radians(180));
     rot = new PMatrix3D();
+    rot.scale(scaler, scaler, scaler);
 //    rot.scale(1+(0.01*(sin(5*radians(frameCount%360)))), 
 //              1-(0.01*(sin(5*radians(frameCount%360)))), 
 //              1+(0.01*(sin(5*radians(frameCount%360)))));
@@ -57,12 +64,23 @@ class Slimu {
       thing.setVertex(i, n);
     }
     shape(thing);
+    scaler = 1.0;
+  }
+  
+  public void mouseWheelMoved(MouseWheelEvent e) {
+    int notches = e.getWheelRotation();
+    if (notches < 0) {
+      scaler += 0.04;
+    }
+    else {
+      if (scaler >= 0.05) {scaler -= 0.04;}
+    }
   }
   
 //  resets thing to its original state
   public void reset() {
     dx = 0.0;
-    dy = 0.0;
+    dy = 0.5;
     dz = 0.0;
     
     for (int i=0; i<numVerts; i++) {
@@ -190,14 +208,14 @@ class Slimu {
 // circle: list of indices of unique neighbors of selected vertex
 // dowhat: action code, 1 - pull, 2 - carve
   private void deform(int dowhat, IntList apex, IntList circle) {
-    float a = select.x - center.x;
-    float b = select.y - center.y;
+    float a = ((select.x - center.x)+(mouse.x - select.x)*5)/6;
+    float b = ((select.y - center.y)+(mouse.y - select.y)*5)/6;
     float c = select.z - center.z;
     float amount = mouse.dist(new PVector(select.x, select.y));
 
     PVector delta = new PVector(a, b, c);
     delta.normalize();
-    delta.mult(5);
+    delta.mult(3);
     if (dowhat == 2) {
       delta.mult(-1);
     }
@@ -213,13 +231,13 @@ class Slimu {
     for (int j=0; j<circle.size(); j++) {
       PVector k = thing.getVertex(circle.get(j));
       IntList sobeit = getJustMe(k);
-      float d = k.x - center.x;
-      float e = k.y - center.y;
+      float d = ((k.x - center.x)+(select.x - k.x)*5)/6;
+      float e = ((k.y - center.y)+(select.y - k.y)*5)/6;
       float f = k.z - center.z;
   
       PVector delt = new PVector(d, e, f);
       delt.normalize();
-      delt.mult(3);
+      delt.mult(2);
       if (dowhat == 2) {
         delt.mult(-1);
       }
