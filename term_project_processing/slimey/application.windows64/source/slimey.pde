@@ -1,10 +1,12 @@
 import nervoussystem.obj.*;
+import java.util.Map;
 
 float dx, dy, dz;
 int action = 1;
 boolean paause;
 PShape slime;
-Pair smooth, carve, pull, reset, pause, save;
+PShader toon;
+Pair smooth, pucker, puff, pinch, reset, pause, save;
 Slimu arf;
 
 String tips = "AD - rotate x WS - rotate y QE - rotate z scroll - scale";
@@ -17,16 +19,68 @@ void setup() {
   dz = 0.0;
   
 //  parse vertex data
-  String[] allData = loadStrings("slime_verts.txt");
+  String[] allData = loadStrings("slime_vert.txt");
+  String[] allNorm = loadStrings("slime_norm.txt");
+  String[] allTex = loadStrings("slime_tex.txt");
+  String[] indices = loadStrings("slime_index.txt");
+  ArrayList<PVector> verts = new ArrayList<PVector>();
+  ArrayList<PVector> txtrs = new ArrayList<PVector>();
+  ArrayList<PVector> norms = new ArrayList<PVector>();
+  HashMap<PVector, PVector> vertToTex = new HashMap<PVector, PVector>();
+  PImage img = loadImage("pattern.png");
+
+  for (int i=0; i<allNorm.length; i++) {
+    String[] aNorm = trim(split(allNorm[i], ' '));
+    PVector n = new PVector(float(aNorm[0]), float(aNorm[1]), float(aNorm[2]));
+    norms.add(n);
+    if (i<allData.length) {
+      String[] aVert = trim(split(allData[i], ' '));
+      PVector v = new PVector(float(aVert[0]), float(aVert[1]), float(aVert[2]));
+      verts.add(v);
+    }
+    if (i<allTex.length) {
+      String[] aTex = trim(split(allTex[i], ' '));
+      PVector t = new PVector(float(aTex[0]), float(aTex[1]));
+      txtrs.add(t);
+    }
+  }
   
   stroke(255);
   fill(150, 180, 180, 85);
   slime = createShape();
   slime.beginShape(TRIANGLES);
+  slime.textureMode(NORMAL);
+  slime.texture(img);
   
-  for (int i=0; i<allData.length; i++) {
-    String[] aVert = trim(split(allData[i], ' '));
-    slime.vertex(float(aVert[0]), float(aVert[1]), float(aVert[2]));
+  int txtr = 0;
+  
+  for (int i=0; i<indices.length; i++) {
+    String[] index = trim(split(indices[i], ' '));
+    ArrayList<Pair> temp = new ArrayList<Pair>();
+    
+    for (int j=0; j<index.length; j++) {
+      String[] guy = trim(split(index[j], '/'));
+      Pair m = new Pair(int(guy[0])-1, int(guy[1])-1, int(guy[2])-1);
+      temp.add(m);
+    }
+    
+    PVector n1 = norms.get(temp.get(0).z);
+    PVector t1 = txtrs.get(temp.get(0).y);
+    PVector v1 = verts.get(temp.get(0).x);
+    slime.normal(n1.x, n1.y, n1.z);
+    slime.vertex(v1.x, v1.y, v1.z, t1.x, t1.y);
+    
+    PVector n2 = norms.get(temp.get(1).z);
+    PVector t2 = txtrs.get(temp.get(1).y);
+    PVector v2 = verts.get(temp.get(1).x);
+    slime.normal(n2.x, n2.y, n2.z);
+    slime.vertex(v2.x, v2.y, v2.z, t2.x, t2.y);
+    
+    PVector n3 = norms.get(temp.get(2).z);
+    PVector t3 = txtrs.get(temp.get(2).y);
+    PVector v3 = verts.get(temp.get(2).x);
+    slime.normal(n3.x, n3.y, n3.z);
+    slime.vertex(v3.x, v3.y, v3.z, t3.x, t3.y);
   }
   
   slime.endShape(CLOSE); 
@@ -38,8 +92,9 @@ void setup() {
   paause = false;
   
   smooth = new Pair(1200, 80);
-  carve = new Pair(1200, 160);
-  pull = new Pair(1200, 240);
+  pucker = new Pair(1200, 240);
+  puff = new Pair(1200, 320);
+  pinch = new Pair(1200, 160);
   
   pause = new Pair(1200, 620);
   save = new Pair(1200, 700);
@@ -70,35 +125,46 @@ void draw() {
   else {noFill();}
   ellipse(smooth.x, smooth.y, 50, 50);
   
-//  carve button
-  if (inCircle(carve.x, carve.y)) {
+  //  pinch button
+  if (inCircle(pinch.x, pinch.y)) {
     textSize(12);
     fill(255);
-    text("carve", 1140, carve.y);
+    text("pinch", 1140, pinch.y);
     fill(220, 200, 120);
   }
-  else if (action == 2) {fill(120, 150, 200);}
+  else if (action == 4) {fill(120, 150, 200);}
   else {noFill();}
-  ellipse(carve.x, carve.y, 50, 50);
+  ellipse(pinch.x, pinch.y, 50, 50);
   
-//  pull button
-  if (inCircle(pull.x, pull.y)) {
+  //  pucker button
+  if (inCircle(pucker.x, pucker.y)) {
     textSize(12);
     fill(255);
-    text("pull", 1148, pull.y);
+    text("pucker", 1132, pucker.y);
     fill(220, 200, 120);
   }
-  else if (action == 1) {fill(120, 185, 160);}
+  else if (action == 2) {fill(120, 185, 160);}
   else {noFill();}
-  ellipse(pull.x, pull.y, 50, 50);
+  ellipse(pucker.x, pucker.y, 50, 50);
   
-//  pause button
+  //  puff button
+  if (inCircle(puff.x, puff.y)) {
+    textSize(12);
+    fill(255);
+    text("puff", 1148, puff.y);
+    fill(220, 200, 120);
+  }
+  else if (action == 1) {fill(160, 200, 120);}
+  else {noFill();}
+  ellipse(puff.x, puff.y, 50, 50);
+  
+  //  pause button
   if (inCircle(pause.x, pause.y)) {
     textSize(12);
     fill(255);
     if (!paause) {text("pause", 1135, pause.y);}
     else {text("play", 1145, pause.y);}
-    fill(160, 185, 120);
+    fill(220, 200, 120);
   }
   else {noFill();}
   ellipse(pause.x, pause.y, 50, 50);
@@ -119,6 +185,7 @@ void draw() {
   }
   
   stroke(255);
+  
   //  save button
   if (inCircle(save.x, save.y)) {
     textSize(12);
@@ -174,15 +241,26 @@ void keyPressed() {
 void mousePressed() {
   if (inCircle(reset.x, reset.y)) {
     arf.reset();
+    dx = 0.0;
+    dy = 0.5;
+    dz = 0.0;
+    if (paause == true) {
+      arf.dx = 0;
+      arf.dy = 0;
+      arf.dz = 0;
+    }
   }
-  else if(inCircle(carve.x, carve.y)) {
+  else if(inCircle(pucker.x, pucker.y)) {
     action = 2;
   }
-  else if(inCircle(pull.x, pull.y)) {
+  else if(inCircle(puff.x, puff.y)) {
     action = 1;
   }
   else if(inCircle(smooth.x, smooth.y)) {
     action = 3;
+  }
+  else if(inCircle(pinch.x, pinch.y)) {
+    action = 4;
   }
   else if(inCircle(pause.x, pause.y)) {
     paause = !paause;
@@ -223,8 +301,9 @@ void drawSlime(PGraphics pg) {
 void mouseDragged() {
   if (!inCircle(reset.x, reset.y) && 
       !inCircle(smooth.x, smooth.y) && 
-      !inCircle(carve.x, carve.y) && 
-      !inCircle(pull.x, pull.y) &&
+      !inCircle(pucker.x, pucker.y) && 
+      !inCircle(puff.x, puff.y) &&
+      !inCircle(pinch.x, pinch.y) &&
       !inCircle(pause.x, pause.y) &&
       !inCircle(save.x, save.y)) {
     arf.justDoIt(pmouseX, pmouseY, action);

@@ -4,6 +4,7 @@ import processing.event.*;
 import processing.opengl.*; 
 
 import nervoussystem.obj.*; 
+import java.util.Map; 
 import java.awt.event.*; 
 
 import java.util.HashMap; 
@@ -19,11 +20,13 @@ public class slimey extends PApplet {
 
 
 
+
 float dx, dy, dz;
 int action = 1;
 boolean paause;
 PShape slime;
-Pair smooth, carve, pull, reset, pause, save;
+PShader toon;
+Pair smooth, pucker, puff, pinch, reset, pause, save;
 Slimu arf;
 
 String tips = "AD - rotate x WS - rotate y QE - rotate z scroll - scale";
@@ -36,16 +39,68 @@ public void setup() {
   dz = 0.0f;
   
 //  parse vertex data
-  String[] allData = loadStrings("slime_verts.txt");
+  String[] allData = loadStrings("slime_vert.txt");
+  String[] allNorm = loadStrings("slime_norm.txt");
+  String[] allTex = loadStrings("slime_tex.txt");
+  String[] indices = loadStrings("slime_index.txt");
+  ArrayList<PVector> verts = new ArrayList<PVector>();
+  ArrayList<PVector> txtrs = new ArrayList<PVector>();
+  ArrayList<PVector> norms = new ArrayList<PVector>();
+  HashMap<PVector, PVector> vertToTex = new HashMap<PVector, PVector>();
+  PImage img = loadImage("pattern.png");
+
+  for (int i=0; i<allNorm.length; i++) {
+    String[] aNorm = trim(split(allNorm[i], ' '));
+    PVector n = new PVector(PApplet.parseFloat(aNorm[0]), PApplet.parseFloat(aNorm[1]), PApplet.parseFloat(aNorm[2]));
+    norms.add(n);
+    if (i<allData.length) {
+      String[] aVert = trim(split(allData[i], ' '));
+      PVector v = new PVector(PApplet.parseFloat(aVert[0]), PApplet.parseFloat(aVert[1]), PApplet.parseFloat(aVert[2]));
+      verts.add(v);
+    }
+    if (i<allTex.length) {
+      String[] aTex = trim(split(allTex[i], ' '));
+      PVector t = new PVector(PApplet.parseFloat(aTex[0]), PApplet.parseFloat(aTex[1]));
+      txtrs.add(t);
+    }
+  }
   
   stroke(255);
   fill(150, 180, 180, 85);
   slime = createShape();
   slime.beginShape(TRIANGLES);
+  slime.textureMode(NORMAL);
+  slime.texture(img);
   
-  for (int i=0; i<allData.length; i++) {
-    String[] aVert = trim(split(allData[i], ' '));
-    slime.vertex(PApplet.parseFloat(aVert[0]), PApplet.parseFloat(aVert[1]), PApplet.parseFloat(aVert[2]));
+  int txtr = 0;
+  
+  for (int i=0; i<indices.length; i++) {
+    String[] index = trim(split(indices[i], ' '));
+    ArrayList<Pair> temp = new ArrayList<Pair>();
+    
+    for (int j=0; j<index.length; j++) {
+      String[] guy = trim(split(index[j], '/'));
+      Pair m = new Pair(PApplet.parseInt(guy[0])-1, PApplet.parseInt(guy[1])-1, PApplet.parseInt(guy[2])-1);
+      temp.add(m);
+    }
+    
+    PVector n1 = norms.get(temp.get(0).z);
+    PVector t1 = txtrs.get(temp.get(0).y);
+    PVector v1 = verts.get(temp.get(0).x);
+    slime.normal(n1.x, n1.y, n1.z);
+    slime.vertex(v1.x, v1.y, v1.z, t1.x, t1.y);
+    
+    PVector n2 = norms.get(temp.get(1).z);
+    PVector t2 = txtrs.get(temp.get(1).y);
+    PVector v2 = verts.get(temp.get(1).x);
+    slime.normal(n2.x, n2.y, n2.z);
+    slime.vertex(v2.x, v2.y, v2.z, t2.x, t2.y);
+    
+    PVector n3 = norms.get(temp.get(2).z);
+    PVector t3 = txtrs.get(temp.get(2).y);
+    PVector v3 = verts.get(temp.get(2).x);
+    slime.normal(n3.x, n3.y, n3.z);
+    slime.vertex(v3.x, v3.y, v3.z, t3.x, t3.y);
   }
   
   slime.endShape(CLOSE); 
@@ -57,8 +112,9 @@ public void setup() {
   paause = false;
   
   smooth = new Pair(1200, 80);
-  carve = new Pair(1200, 160);
-  pull = new Pair(1200, 240);
+  pucker = new Pair(1200, 240);
+  puff = new Pair(1200, 320);
+  pinch = new Pair(1200, 160);
   
   pause = new Pair(1200, 620);
   save = new Pair(1200, 700);
@@ -89,35 +145,46 @@ public void draw() {
   else {noFill();}
   ellipse(smooth.x, smooth.y, 50, 50);
   
-//  carve button
-  if (inCircle(carve.x, carve.y)) {
+  //  pinch button
+  if (inCircle(pinch.x, pinch.y)) {
     textSize(12);
     fill(255);
-    text("carve", 1140, carve.y);
+    text("pinch", 1140, pinch.y);
     fill(220, 200, 120);
   }
-  else if (action == 2) {fill(120, 150, 200);}
+  else if (action == 4) {fill(120, 150, 200);}
   else {noFill();}
-  ellipse(carve.x, carve.y, 50, 50);
+  ellipse(pinch.x, pinch.y, 50, 50);
   
-//  pull button
-  if (inCircle(pull.x, pull.y)) {
+  //  pucker button
+  if (inCircle(pucker.x, pucker.y)) {
     textSize(12);
     fill(255);
-    text("pull", 1148, pull.y);
+    text("pucker", 1132, pucker.y);
     fill(220, 200, 120);
   }
-  else if (action == 1) {fill(120, 185, 160);}
+  else if (action == 2) {fill(120, 185, 160);}
   else {noFill();}
-  ellipse(pull.x, pull.y, 50, 50);
+  ellipse(pucker.x, pucker.y, 50, 50);
   
-//  pause button
+  //  puff button
+  if (inCircle(puff.x, puff.y)) {
+    textSize(12);
+    fill(255);
+    text("puff", 1148, puff.y);
+    fill(220, 200, 120);
+  }
+  else if (action == 1) {fill(160, 200, 120);}
+  else {noFill();}
+  ellipse(puff.x, puff.y, 50, 50);
+  
+  //  pause button
   if (inCircle(pause.x, pause.y)) {
     textSize(12);
     fill(255);
     if (!paause) {text("pause", 1135, pause.y);}
     else {text("play", 1145, pause.y);}
-    fill(160, 185, 120);
+    fill(220, 200, 120);
   }
   else {noFill();}
   ellipse(pause.x, pause.y, 50, 50);
@@ -138,6 +205,7 @@ public void draw() {
   }
   
   stroke(255);
+  
   //  save button
   if (inCircle(save.x, save.y)) {
     textSize(12);
@@ -193,15 +261,26 @@ public void keyPressed() {
 public void mousePressed() {
   if (inCircle(reset.x, reset.y)) {
     arf.reset();
+    dx = 0.0f;
+    dy = 0.5f;
+    dz = 0.0f;
+    if (paause == true) {
+      arf.dx = 0;
+      arf.dy = 0;
+      arf.dz = 0;
+    }
   }
-  else if(inCircle(carve.x, carve.y)) {
+  else if(inCircle(pucker.x, pucker.y)) {
     action = 2;
   }
-  else if(inCircle(pull.x, pull.y)) {
+  else if(inCircle(puff.x, puff.y)) {
     action = 1;
   }
   else if(inCircle(smooth.x, smooth.y)) {
     action = 3;
+  }
+  else if(inCircle(pinch.x, pinch.y)) {
+    action = 4;
   }
   else if(inCircle(pause.x, pause.y)) {
     paause = !paause;
@@ -242,8 +321,9 @@ public void drawSlime(PGraphics pg) {
 public void mouseDragged() {
   if (!inCircle(reset.x, reset.y) && 
       !inCircle(smooth.x, smooth.y) && 
-      !inCircle(carve.x, carve.y) && 
-      !inCircle(pull.x, pull.y) &&
+      !inCircle(pucker.x, pucker.y) && 
+      !inCircle(puff.x, puff.y) &&
+      !inCircle(pinch.x, pinch.y) &&
       !inCircle(pause.x, pause.y) &&
       !inCircle(save.x, save.y)) {
     arf.justDoIt(pmouseX, pmouseY, action);
@@ -263,10 +343,18 @@ public boolean inCircle(int x, int y) {
 class Pair{
   public int x;
   public int y;
+  public int z;
   
   public Pair(int a, int b) {
     x = a;
     y = b;
+    z = 0;
+  }
+  
+  public Pair(int a, int b, int c) {
+    x = a;
+    y = b;
+    z = c;
   }
 }
 
@@ -322,9 +410,7 @@ class Slimu implements MouseWheelListener{
     rotateX(radians(180));
     rot = new PMatrix3D();
     rot.scale(scaler, scaler, scaler);
-//    rot.scale(1+(0.01*(sin(5*radians(frameCount%360)))), 
-//              1-(0.01*(sin(5*radians(frameCount%360)))), 
-//              1+(0.01*(sin(5*radians(frameCount%360)))));
+
     rot.rotateX(radians(dx));
     rot.rotateY(radians(dy));
     rot.rotateZ(radians(dz));
@@ -334,6 +420,7 @@ class Slimu implements MouseWheelListener{
       rot.mult(thing.getVertex(i), n);
       thing.setVertex(i, n);
     }
+    
     shape(thing);
     scaler = 1.0f;
   }
@@ -341,10 +428,10 @@ class Slimu implements MouseWheelListener{
   public void mouseWheelMoved(MouseWheelEvent e) {
     int notches = e.getWheelRotation();
     if (notches < 0) {
-      scaler += 0.02f;
+      scaler += 0.04f;
     }
     else {
-      if (scaler >= 0.03f) {scaler -= 0.02f;}
+      if (scaler >= 0.05f) {scaler -= 0.04f;}
     }
   }
   
@@ -433,10 +520,6 @@ class Slimu implements MouseWheelListener{
       loop += 3;
     }
     
-//    for (int a=0; a<neighbors.size(); a++) {
-//      println(neighbors.get(a));
-//    }
-    
     return n_index;
   }
  
@@ -475,22 +558,39 @@ class Slimu implements MouseWheelListener{
     return allMe;
   }
   
-// apex: list of the indices of selected vertex
-// circle: list of indices of unique neighbors of selected vertex
-// dowhat: action code, 1 - pull, 2 - carve
-  private void deform(int dowhat, IntList apex, IntList circle) {
-    float a = ((select.x - center.x)+(mouse.x - select.x)*5)/6;
-    float b = ((select.y - center.y)+(mouse.y - select.y)*5)/6;
-    float c = select.z - center.z;
-    float amount = mouse.dist(new PVector(select.x, select.y));
-
+  private PVector deformVector(PVector peak, PVector you, int action) {
+    float a, b, c;
+//    puff
+    if (action == 1) {
+      a = you.x - center.x;
+      b = you.y - center.y;
+      c = you.z - center.z;
+    }
+//    pucker
+    else if (action == 2) {
+      a = -(you.x - center.x);
+      b = -(you.y - center.y);
+      c = -(you.z - center.z);
+    }
+//    tweak
+    else {
+      a = ((you.x - center.x)+(peak.x - you.x)*10)/11;
+      b = ((you.y - center.y)+(peak.y - you.y)*10)/11;
+//      a = peak.x - you.x;
+//      b = peak.y - you.y;
+      c = 0;
+    }
     PVector delta = new PVector(a, b, c);
     delta.normalize();
-    delta.mult(3);
-    if (dowhat == 2) {
-      delta.mult(-1);
-    }
-    
+    return delta;
+  }
+  
+// apex: list of the indices of selected vertex
+// circle: list of indices of unique neighbors of selected vertex
+// dowhat: action code, 1 - puff, 2 - pucker, 4 - tweak
+  private void deform(int dowhat, IntList apex, IntList circle) {
+    PVector delta = deformVector(mouse, select, dowhat);
+    delta.mult(2);
     println("change: ", delta);
     
     select.add(delta);
@@ -502,16 +602,8 @@ class Slimu implements MouseWheelListener{
     for (int j=0; j<circle.size(); j++) {
       PVector k = thing.getVertex(circle.get(j));
       IntList sobeit = getJustMe(k);
-      float d = ((k.x - center.x)+(select.x - k.x)*5)/6;
-      float e = ((k.y - center.y)+(select.y - k.y)*5)/6;
-      float f = k.z - center.z;
-  
-      PVector delt = new PVector(d, e, f);
-      delt.normalize();
-      delt.mult(2);
-      if (dowhat == 2) {
-        delt.mult(-1);
-      }
+      PVector delt = deformVector(select, k, dowhat);
+      delt.mult(1);
       
       println("change: ", delt);
       
@@ -550,13 +642,11 @@ class Slimu implements MouseWheelListener{
     sum_z = ((sum_z/neighbors.size())+(20*myself.z))/21;
     
     PVector n = new PVector(sum_x, sum_y, sum_z);
-//    println("old me(", v, "): ", thing.getVertex(v));
     
     IntList me = getJustMe(thing.getVertex(v));
     for (int j=0; j<me.size(); j++) {
       thing.setVertex(me.get(j), n);
     }
-//    println("new me(", v, "): ", thing.getVertex(me.get(0)));
     
   }
   
