@@ -5,6 +5,7 @@ class Slimu implements MouseWheelListener{
   public float dx, dy, dz;
   public float scaler;
   public int numVerts;
+  public boolean shade;
   private PShape original;
   private PVector center;
   private PVector select;
@@ -42,6 +43,8 @@ class Slimu implements MouseWheelListener{
     right = 0;
     front = 0;
     
+    shade = false;
+    
     center();
   }
   
@@ -51,9 +54,7 @@ class Slimu implements MouseWheelListener{
     rotateX(radians(180));
     rot = new PMatrix3D();
     rot.scale(scaler, scaler, scaler);
-//    rot.scale(1+(0.01*(sin(5*radians(frameCount%360)))), 
-//              1-(0.01*(sin(5*radians(frameCount%360)))), 
-//              1+(0.01*(sin(5*radians(frameCount%360)))));
+
     rot.rotateX(radians(dx));
     rot.rotateY(radians(dy));
     rot.rotateZ(radians(dz));
@@ -63,6 +64,8 @@ class Slimu implements MouseWheelListener{
       rot.mult(thing.getVertex(i), n);
       thing.setVertex(i, n);
     }
+    
+    if (shade == true) {thing.disableStyle();}
     shape(thing);
     scaler = 1.0;
   }
@@ -161,10 +164,6 @@ class Slimu implements MouseWheelListener{
       }
       loop += 3;
     }
-    
-//    for (int a=0; a<neighbors.size(); a++) {
-//      println(neighbors.get(a));
-//    }
     
     return n_index;
   }
@@ -288,13 +287,11 @@ class Slimu implements MouseWheelListener{
     sum_z = ((sum_z/neighbors.size())+(20*myself.z))/21;
     
     PVector n = new PVector(sum_x, sum_y, sum_z);
-//    println("old me(", v, "): ", thing.getVertex(v));
     
     IntList me = getJustMe(thing.getVertex(v));
     for (int j=0; j<me.size(); j++) {
       thing.setVertex(me.get(j), n);
     }
-//    println("new me(", v, "): ", thing.getVertex(me.get(0)));
     
   }
   
