@@ -266,9 +266,9 @@ class Slimu implements MouseWheelListener{
     
     sum.div(divide);
     PVector n = new PVector(myself.x, myself.y, myself.z);
-    n.mult(60);
+    n.mult(30);
     sum.add(n);
-    sum.div(61.0);
+    sum.div(31.0);
     
     IntList me = getJustMe(thing.getVertex(v));
     for (int j=0; j<me.size(); j++) {

@@ -2,7 +2,7 @@ import java.awt.event.*;
 
 class Slimu implements MouseWheelListener{
   public PShape thing;
-  public float dx, dy, dz;
+  public PVector rotation;
   public float scaler;
   public int numVerts;
   private PShape original;
@@ -15,7 +15,7 @@ class Slimu implements MouseWheelListener{
   
 //  PShape thing: the 3D shape
 //  PShape original: original state of thing
-//  float dx, dy, dz: angle of rotation
+//  PVector rotation: angle of rotation
 //  int upper, lower, left, right, front: bounds
   public Slimu(PShape s) {
     addMouseWheelListener(this);
@@ -32,9 +32,7 @@ class Slimu implements MouseWheelListener{
     
     original.endShape(CLOSE);
     
-    dx = 0.0;
-    dy = 0.0;
-    dz = 0.0;
+    rotation = new PVector(0.0, 0.0, 0.0);
     scaler = 1.0;
     upper = 0;
     lower = 0;
@@ -52,9 +50,9 @@ class Slimu implements MouseWheelListener{
     rot = new PMatrix3D();
     rot.scale(scaler, scaler, scaler);
 
-    rot.rotateX(radians(dx));
-    rot.rotateY(radians(dy));
-    rot.rotateZ(radians(dz));
+    rot.rotateX(radians(rotation.x));
+    rot.rotateY(radians(rotation.y));
+    rot.rotateZ(radians(rotation.z));
     
     for (int i=0; i<numVerts; i++) {
       PVector n = new PVector();
@@ -78,9 +76,9 @@ class Slimu implements MouseWheelListener{
   
 //  resets thing to its original state
   public void reset() {
-    dx = 0.0;
-    dy = 0.5;
-    dz = 0.0;
+    rotation.x = 0.0;
+    rotation.y = 0.5;
+    rotation.z = 0.0;
     
     for (int i=0; i<numVerts; i++) {
       PVector n = original.getVertex(i);
@@ -112,11 +110,6 @@ class Slimu implements MouseWheelListener{
     
 //  selected vertex  
     select = thing.getVertex(you);
-
-    println("where i actually meant: ", mouse);
-    println("where i hit: ", select);
-    println("minimum distance: ", select.dist(mouse));
-    println();
     
     if (dowhat == 3) {
       smoooth(you, 2);
@@ -201,24 +194,22 @@ class Slimu implements MouseWheelListener{
   
   private PVector deformVector(PVector peak, PVector you, int action) {
     float a, b, c;
-//    puff
+    //    puff
     if (action == 1) {
       a = you.x - center.x;
       b = you.y - center.y;
       c = you.z - center.z;
     }
-//    pucker
+    //    pucker
     else if (action == 2) {
       a = -(you.x - center.x);
       b = -(you.y - center.y);
       c = -(you.z - center.z);
     }
-//    tweak
+    //    pinch
     else {
       a = ((you.x - center.x)+(peak.x - you.x)*10)/11;
       b = ((you.y - center.y)+(peak.y - you.y)*10)/11;
-//      a = peak.x - you.x;
-//      b = peak.y - you.y;
       c = 0;
     }
     PVector delta = new PVector(a, b, c);
@@ -232,7 +223,6 @@ class Slimu implements MouseWheelListener{
   private void deform(int dowhat, IntList apex, IntList circle) {
     PVector delta = deformVector(mouse, select, dowhat);
     delta.mult(2);
-    println("change: ", delta);
     
     select.add(delta);
     
@@ -244,10 +234,6 @@ class Slimu implements MouseWheelListener{
       PVector k = thing.getVertex(circle.get(j));
       IntList sobeit = getJustMe(k);
       PVector delt = deformVector(select, k, dowhat);
-      delt.mult(1);
-      
-      println("change: ", delt);
-      
       k.add(delt);
       
       for (int p=0; p<sobeit.size(); p++) {
@@ -267,26 +253,26 @@ class Slimu implements MouseWheelListener{
       smoooth(neighbors.get(i), layer-1);
     }
     
-    float sum_x = 0.0;
-    float sum_y = 0.0;
-    float sum_z = 0.0;
+    PVector myself = thing.getVertex(v);
+    PVector sum = new PVector(0.0, 0.0, 0.0);
+    float divide = 0.000001;
     for (int i=0; i<neighbors.size(); i++) {
       PVector a = thing.getVertex(neighbors.get(i));
-      sum_x += a.x;
-      sum_y += a.y;
-      sum_z += a.z;
+      float weight = a.dist(myself);
+      a.mult(weight);
+      sum.add(a);
+      divide += weight;
     }
     
-    PVector myself = thing.getVertex(v);
-    sum_x = ((sum_x/neighbors.size())+(20*myself.x))/21;
-    sum_y = ((sum_y/neighbors.size())+(20*myself.y))/21;
-    sum_z = ((sum_z/neighbors.size())+(20*myself.z))/21;
-    
-    PVector n = new PVector(sum_x, sum_y, sum_z);
+    sum.div(divide);
+    PVector n = new PVector(myself.x, myself.y, myself.z);
+    n.mult(30);
+    sum.add(n);
+    sum.div(31.0);
     
     IntList me = getJustMe(thing.getVertex(v));
     for (int j=0; j<me.size(); j++) {
-      thing.setVertex(me.get(j), n);
+      thing.setVertex(me.get(j), sum);
     }
     
   }

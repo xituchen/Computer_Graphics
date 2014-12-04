@@ -1,22 +1,21 @@
 import nervoussystem.obj.*;
 import java.util.Map;
 
-float dx, dy, dz;
+PVector rotation;
 int action = 1;
+int counter = 0;
 boolean paause;
 PShape slime;
 PShader toon;
-Pair smooth, pucker, puff, pinch, reset, pause, save;
+Pair smooth, pucker, puff, pinch, reset, pause, save, snap;
 Slimu arf;
 
-String tips = "AD - rotate x WS - rotate y QE - rotate z scroll - scale";
+String tips = "LMB - tools       RMB - free rotate AD - rotate x      WS - rotate y      QE - rotate z      scroll - scale";
 
 void setup() {
   size(1280, 860, P3D);
   
-  dx = 0.0;
-  dy = 0.5;
-  dz = 0.0;
+  rotation = new PVector(0, 0.3, 0);
   
 //  parse vertex data
   String[] allData = loadStrings("slime_vert.txt");
@@ -85,9 +84,7 @@ void setup() {
   
   slime.endShape(CLOSE); 
   arf = new Slimu(slime);
-  arf.dx = dx;
-  arf.dy = dy;
-  arf.dz = dz;
+  arf.rotation = rotation;
   
   paause = false;
   
@@ -96,7 +93,8 @@ void setup() {
   puff = new Pair(1200, 320);
   pinch = new Pair(1200, 160);
   
-  pause = new Pair(1200, 620);
+  snap = new Pair(1200, 620);
+  pause = new Pair(1200, 540);
   save = new Pair(1200, 700);
   reset = new Pair(1200, 780);
    
@@ -106,10 +104,11 @@ void setup() {
 
 void draw() {
   background(50);
+  smooth();
   
   textSize(12);
   fill(255);
-  text(tips, 80, 780, 90, 90);
+  text(tips, 80, 780, 110, 140);
   stroke(255);
 
   ellipseMode(CENTER);
@@ -119,7 +118,8 @@ void draw() {
     textSize(12);
     fill(255);
     text("smooth", 1130, smooth.y);
-    fill(220, 200, 120);
+    if (action == 3) {fill(220, 200, 120);}
+    else {fill(150, 110, 190);}
   }
   else if (action == 3) {fill(150, 110, 190);}
   else {noFill();}
@@ -130,7 +130,8 @@ void draw() {
     textSize(12);
     fill(255);
     text("pinch", 1140, pinch.y);
-    fill(220, 200, 120);
+    if (action == 4) {fill(220, 200, 120);}
+    else {fill(120, 150, 200);}
   }
   else if (action == 4) {fill(120, 150, 200);}
   else {noFill();}
@@ -141,7 +142,8 @@ void draw() {
     textSize(12);
     fill(255);
     text("pucker", 1132, pucker.y);
-    fill(220, 200, 120);
+    if (action == 2) {fill(220, 200, 120);}
+    else {fill(120, 185, 160);}
   }
   else if (action == 2) {fill(120, 185, 160);}
   else {noFill();}
@@ -152,11 +154,22 @@ void draw() {
     textSize(12);
     fill(255);
     text("puff", 1148, puff.y);
-    fill(220, 200, 120);
+    if (action == 1) {fill(220, 200, 120);}
+    else {fill(160, 200, 120);}
   }
   else if (action == 1) {fill(160, 200, 120);}
   else {noFill();}
   ellipse(puff.x, puff.y, 50, 50);
+  
+  //  snap button
+  if (inCircle(snap.x, snap.y)) {
+    textSize(12);
+    fill(255);
+    text("snap", 1143, snap.y);
+    fill(220, 200, 120);
+  }
+  else {noFill();}
+  ellipse(snap.x, snap.y, 50, 50);
   
   //  pause button
   if (inCircle(pause.x, pause.y)) {
@@ -164,7 +177,7 @@ void draw() {
     fill(255);
     if (!paause) {text("pause", 1135, pause.y);}
     else {text("play", 1145, pause.y);}
-    fill(220, 200, 120);
+    fill(160, 200, 120);
   }
   else {noFill();}
   ellipse(pause.x, pause.y, 50, 50);
@@ -206,6 +219,7 @@ void draw() {
   else {noFill();}
   ellipse(reset.x, reset.y, 50, 50);
   
+  
   lights();
   arf.display();
 }
@@ -214,26 +228,24 @@ void draw() {
 void keyPressed() {
   if (!paause) {
     if (key == 'w') {
-      dx += 0.5;
+      rotation.x += 0.5;
     }
     else if (key == 's') {
-      dx -= 0.5;
+      rotation.x -= 0.5;
     }
     else if (key == 'a') {
-      dy += 0.5;
+      rotation.y += 0.5;
     }
     else if (key == 'd') {
-      dy -= 0.5;
+      rotation.y -= 0.5;
     }
     else if (key == 'q') {
-      dz += 0.5;
+      rotation.z += 0.5;
     }
     else if (key == 'e') {
-      dz -= 0.5;
+      rotation.z -= 0.5;
     }
-    arf.dx = dx;
-    arf.dy = dy;
-    arf.dz = dz;
+    arf.rotation = rotation;
   }
 }
 
@@ -241,13 +253,9 @@ void keyPressed() {
 void mousePressed() {
   if (inCircle(reset.x, reset.y)) {
     arf.reset();
-    dx = 0.0;
-    dy = 0.5;
-    dz = 0.0;
+    rotation = new PVector(0.0, 0.5, 0.0);
     if (paause == true) {
-      arf.dx = 0;
-      arf.dy = 0;
-      arf.dz = 0;
+      arf.rotation = new PVector(0.0, 0.0, 0.0);
     }
   }
   else if(inCircle(pucker.x, pucker.y)) {
@@ -262,17 +270,18 @@ void mousePressed() {
   else if(inCircle(pinch.x, pinch.y)) {
     action = 4;
   }
+  else if (inCircle(snap.x, snap.y)) {
+    String name = "slimeu" + "_" + counter + ".png";
+    save(name);
+    counter++;
+  }
   else if(inCircle(pause.x, pause.y)) {
     paause = !paause;
     if (paause) {
-      arf.dx = 0;
-      arf.dy = 0;
-      arf.dz = 0;
+      arf.rotation = new PVector(0.0, 0.0, 0.0);
     }
     else {
-      arf.dx = dx;
-      arf.dy = dy;
-      arf.dz = dz;
+      arf.rotation = rotation;
     }
   }
   else if(inCircle(save.x, save.y)) {
@@ -299,14 +308,24 @@ void drawSlime(PGraphics pg) {
 }
 
 void mouseDragged() {
-  if (!inCircle(reset.x, reset.y) && 
-      !inCircle(smooth.x, smooth.y) && 
-      !inCircle(pucker.x, pucker.y) && 
-      !inCircle(puff.x, puff.y) &&
-      !inCircle(pinch.x, pinch.y) &&
-      !inCircle(pause.x, pause.y) &&
-      !inCircle(save.x, save.y)) {
-    arf.justDoIt(pmouseX, pmouseY, action);
+  if (mouseButton==LEFT) {
+    if (!inCircle(reset.x, reset.y) && 
+        !inCircle(smooth.x, smooth.y) && 
+        !inCircle(pucker.x, pucker.y) && 
+        !inCircle(puff.x, puff.y) &&
+        !inCircle(pinch.x, pinch.y) &&
+        !inCircle(pause.x, pause.y) &&
+        !inCircle(snap.x, snap.y) &&
+        !inCircle(save.x, save.y)) {
+      arf.justDoIt(pmouseX, pmouseY, action);
+    }
+  }
+  else {
+    if (!paause) {
+      rotation.x -= (mouseY - pmouseY)*0.01;
+      rotation.y -= (mouseX - pmouseX)*0.01;
+      arf.rotation = rotation;
+    }
   }
 }
 

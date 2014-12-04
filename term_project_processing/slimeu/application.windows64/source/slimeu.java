@@ -16,27 +16,26 @@ import java.io.InputStream;
 import java.io.OutputStream; 
 import java.io.IOException; 
 
-public class slimey extends PApplet {
+public class slimeu extends PApplet {
 
 
 
 
-float dx, dy, dz;
+PVector rotation;
 int action = 1;
+int counter = 0;
 boolean paause;
 PShape slime;
 PShader toon;
-Pair smooth, pucker, puff, pinch, reset, pause, save;
+Pair smooth, pucker, puff, pinch, reset, pause, save, snap;
 Slimu arf;
 
-String tips = "AD - rotate x WS - rotate y QE - rotate z scroll - scale";
+String tips = "LMB - tools       RMB - free rotate AD - rotate x      WS - rotate y      QE - rotate z      scroll - scale";
 
 public void setup() {
   size(1280, 860, P3D);
   
-  dx = 0.0f;
-  dy = 0.5f;
-  dz = 0.0f;
+  rotation = new PVector(0, 0.3f, 0);
   
 //  parse vertex data
   String[] allData = loadStrings("slime_vert.txt");
@@ -105,9 +104,7 @@ public void setup() {
   
   slime.endShape(CLOSE); 
   arf = new Slimu(slime);
-  arf.dx = dx;
-  arf.dy = dy;
-  arf.dz = dz;
+  arf.rotation = rotation;
   
   paause = false;
   
@@ -116,7 +113,8 @@ public void setup() {
   puff = new Pair(1200, 320);
   pinch = new Pair(1200, 160);
   
-  pause = new Pair(1200, 620);
+  snap = new Pair(1200, 620);
+  pause = new Pair(1200, 540);
   save = new Pair(1200, 700);
   reset = new Pair(1200, 780);
    
@@ -126,10 +124,11 @@ public void setup() {
 
 public void draw() {
   background(50);
+  smooth();
   
   textSize(12);
   fill(255);
-  text(tips, 80, 780, 90, 90);
+  text(tips, 80, 780, 110, 140);
   stroke(255);
 
   ellipseMode(CENTER);
@@ -139,7 +138,8 @@ public void draw() {
     textSize(12);
     fill(255);
     text("smooth", 1130, smooth.y);
-    fill(220, 200, 120);
+    if (action == 3) {fill(220, 200, 120);}
+    else {fill(150, 110, 190);}
   }
   else if (action == 3) {fill(150, 110, 190);}
   else {noFill();}
@@ -150,7 +150,8 @@ public void draw() {
     textSize(12);
     fill(255);
     text("pinch", 1140, pinch.y);
-    fill(220, 200, 120);
+    if (action == 4) {fill(220, 200, 120);}
+    else {fill(120, 150, 200);}
   }
   else if (action == 4) {fill(120, 150, 200);}
   else {noFill();}
@@ -161,7 +162,8 @@ public void draw() {
     textSize(12);
     fill(255);
     text("pucker", 1132, pucker.y);
-    fill(220, 200, 120);
+    if (action == 2) {fill(220, 200, 120);}
+    else {fill(120, 185, 160);}
   }
   else if (action == 2) {fill(120, 185, 160);}
   else {noFill();}
@@ -172,11 +174,22 @@ public void draw() {
     textSize(12);
     fill(255);
     text("puff", 1148, puff.y);
-    fill(220, 200, 120);
+    if (action == 1) {fill(220, 200, 120);}
+    else {fill(160, 200, 120);}
   }
   else if (action == 1) {fill(160, 200, 120);}
   else {noFill();}
   ellipse(puff.x, puff.y, 50, 50);
+  
+  //  snap button
+  if (inCircle(snap.x, snap.y)) {
+    textSize(12);
+    fill(255);
+    text("snap", 1143, snap.y);
+    fill(220, 200, 120);
+  }
+  else {noFill();}
+  ellipse(snap.x, snap.y, 50, 50);
   
   //  pause button
   if (inCircle(pause.x, pause.y)) {
@@ -184,7 +197,7 @@ public void draw() {
     fill(255);
     if (!paause) {text("pause", 1135, pause.y);}
     else {text("play", 1145, pause.y);}
-    fill(220, 200, 120);
+    fill(160, 200, 120);
   }
   else {noFill();}
   ellipse(pause.x, pause.y, 50, 50);
@@ -226,6 +239,7 @@ public void draw() {
   else {noFill();}
   ellipse(reset.x, reset.y, 50, 50);
   
+  
   lights();
   arf.display();
 }
@@ -234,26 +248,24 @@ public void draw() {
 public void keyPressed() {
   if (!paause) {
     if (key == 'w') {
-      dx += 0.5f;
+      rotation.x += 0.5f;
     }
     else if (key == 's') {
-      dx -= 0.5f;
+      rotation.x -= 0.5f;
     }
     else if (key == 'a') {
-      dy += 0.5f;
+      rotation.y += 0.5f;
     }
     else if (key == 'd') {
-      dy -= 0.5f;
+      rotation.y -= 0.5f;
     }
     else if (key == 'q') {
-      dz += 0.5f;
+      rotation.z += 0.5f;
     }
     else if (key == 'e') {
-      dz -= 0.5f;
+      rotation.z -= 0.5f;
     }
-    arf.dx = dx;
-    arf.dy = dy;
-    arf.dz = dz;
+    arf.rotation = rotation;
   }
 }
 
@@ -261,13 +273,9 @@ public void keyPressed() {
 public void mousePressed() {
   if (inCircle(reset.x, reset.y)) {
     arf.reset();
-    dx = 0.0f;
-    dy = 0.5f;
-    dz = 0.0f;
+    rotation = new PVector(0.0f, 0.5f, 0.0f);
     if (paause == true) {
-      arf.dx = 0;
-      arf.dy = 0;
-      arf.dz = 0;
+      arf.rotation = new PVector(0.0f, 0.0f, 0.0f);
     }
   }
   else if(inCircle(pucker.x, pucker.y)) {
@@ -282,17 +290,18 @@ public void mousePressed() {
   else if(inCircle(pinch.x, pinch.y)) {
     action = 4;
   }
+  else if (inCircle(snap.x, snap.y)) {
+    String name = "slimeu" + "_" + counter + ".png";
+    save(name);
+    counter++;
+  }
   else if(inCircle(pause.x, pause.y)) {
     paause = !paause;
     if (paause) {
-      arf.dx = 0;
-      arf.dy = 0;
-      arf.dz = 0;
+      arf.rotation = new PVector(0.0f, 0.0f, 0.0f);
     }
     else {
-      arf.dx = dx;
-      arf.dy = dy;
-      arf.dz = dz;
+      arf.rotation = rotation;
     }
   }
   else if(inCircle(save.x, save.y)) {
@@ -319,14 +328,24 @@ public void drawSlime(PGraphics pg) {
 }
 
 public void mouseDragged() {
-  if (!inCircle(reset.x, reset.y) && 
-      !inCircle(smooth.x, smooth.y) && 
-      !inCircle(pucker.x, pucker.y) && 
-      !inCircle(puff.x, puff.y) &&
-      !inCircle(pinch.x, pinch.y) &&
-      !inCircle(pause.x, pause.y) &&
-      !inCircle(save.x, save.y)) {
-    arf.justDoIt(pmouseX, pmouseY, action);
+  if (mouseButton==LEFT) {
+    if (!inCircle(reset.x, reset.y) && 
+        !inCircle(smooth.x, smooth.y) && 
+        !inCircle(pucker.x, pucker.y) && 
+        !inCircle(puff.x, puff.y) &&
+        !inCircle(pinch.x, pinch.y) &&
+        !inCircle(pause.x, pause.y) &&
+        !inCircle(snap.x, snap.y) &&
+        !inCircle(save.x, save.y)) {
+      arf.justDoIt(pmouseX, pmouseY, action);
+    }
+  }
+  else {
+    if (!paause) {
+      rotation.x -= (mouseY - pmouseY)*0.01f;
+      rotation.y -= (mouseX - pmouseX)*0.01f;
+      arf.rotation = rotation;
+    }
   }
 }
 
@@ -361,7 +380,7 @@ class Pair{
 
 class Slimu implements MouseWheelListener{
   public PShape thing;
-  public float dx, dy, dz;
+  public PVector rotation;
   public float scaler;
   public int numVerts;
   private PShape original;
@@ -374,7 +393,7 @@ class Slimu implements MouseWheelListener{
   
 //  PShape thing: the 3D shape
 //  PShape original: original state of thing
-//  float dx, dy, dz: angle of rotation
+//  PVector rotation: angle of rotation
 //  int upper, lower, left, right, front: bounds
   public Slimu(PShape s) {
     addMouseWheelListener(this);
@@ -391,9 +410,7 @@ class Slimu implements MouseWheelListener{
     
     original.endShape(CLOSE);
     
-    dx = 0.0f;
-    dy = 0.0f;
-    dz = 0.0f;
+    rotation = new PVector(0.0f, 0.0f, 0.0f);
     scaler = 1.0f;
     upper = 0;
     lower = 0;
@@ -411,9 +428,9 @@ class Slimu implements MouseWheelListener{
     rot = new PMatrix3D();
     rot.scale(scaler, scaler, scaler);
 
-    rot.rotateX(radians(dx));
-    rot.rotateY(radians(dy));
-    rot.rotateZ(radians(dz));
+    rot.rotateX(radians(rotation.x));
+    rot.rotateY(radians(rotation.y));
+    rot.rotateZ(radians(rotation.z));
     
     for (int i=0; i<numVerts; i++) {
       PVector n = new PVector();
@@ -437,9 +454,9 @@ class Slimu implements MouseWheelListener{
   
 //  resets thing to its original state
   public void reset() {
-    dx = 0.0f;
-    dy = 0.5f;
-    dz = 0.0f;
+    rotation.x = 0.0f;
+    rotation.y = 0.5f;
+    rotation.z = 0.0f;
     
     for (int i=0; i<numVerts; i++) {
       PVector n = original.getVertex(i);
@@ -471,11 +488,6 @@ class Slimu implements MouseWheelListener{
     
 //  selected vertex  
     select = thing.getVertex(you);
-
-    println("where i actually meant: ", mouse);
-    println("where i hit: ", select);
-    println("minimum distance: ", select.dist(mouse));
-    println();
     
     if (dowhat == 3) {
       smoooth(you, 2);
@@ -560,24 +572,22 @@ class Slimu implements MouseWheelListener{
   
   private PVector deformVector(PVector peak, PVector you, int action) {
     float a, b, c;
-//    puff
+    //    puff
     if (action == 1) {
       a = you.x - center.x;
       b = you.y - center.y;
       c = you.z - center.z;
     }
-//    pucker
+    //    pucker
     else if (action == 2) {
       a = -(you.x - center.x);
       b = -(you.y - center.y);
       c = -(you.z - center.z);
     }
-//    tweak
+    //    pinch
     else {
       a = ((you.x - center.x)+(peak.x - you.x)*10)/11;
       b = ((you.y - center.y)+(peak.y - you.y)*10)/11;
-//      a = peak.x - you.x;
-//      b = peak.y - you.y;
       c = 0;
     }
     PVector delta = new PVector(a, b, c);
@@ -591,7 +601,6 @@ class Slimu implements MouseWheelListener{
   private void deform(int dowhat, IntList apex, IntList circle) {
     PVector delta = deformVector(mouse, select, dowhat);
     delta.mult(2);
-    println("change: ", delta);
     
     select.add(delta);
     
@@ -603,10 +612,6 @@ class Slimu implements MouseWheelListener{
       PVector k = thing.getVertex(circle.get(j));
       IntList sobeit = getJustMe(k);
       PVector delt = deformVector(select, k, dowhat);
-      delt.mult(1);
-      
-      println("change: ", delt);
-      
       k.add(delt);
       
       for (int p=0; p<sobeit.size(); p++) {
@@ -626,26 +631,26 @@ class Slimu implements MouseWheelListener{
       smoooth(neighbors.get(i), layer-1);
     }
     
-    float sum_x = 0.0f;
-    float sum_y = 0.0f;
-    float sum_z = 0.0f;
+    PVector myself = thing.getVertex(v);
+    PVector sum = new PVector(0.0f, 0.0f, 0.0f);
+    float divide = 0.000001f;
     for (int i=0; i<neighbors.size(); i++) {
       PVector a = thing.getVertex(neighbors.get(i));
-      sum_x += a.x;
-      sum_y += a.y;
-      sum_z += a.z;
+      float weight = a.dist(myself);
+      a.mult(weight);
+      sum.add(a);
+      divide += weight;
     }
     
-    PVector myself = thing.getVertex(v);
-    sum_x = ((sum_x/neighbors.size())+(20*myself.x))/21;
-    sum_y = ((sum_y/neighbors.size())+(20*myself.y))/21;
-    sum_z = ((sum_z/neighbors.size())+(20*myself.z))/21;
-    
-    PVector n = new PVector(sum_x, sum_y, sum_z);
+    sum.div(divide);
+    PVector n = new PVector(myself.x, myself.y, myself.z);
+    n.mult(30);
+    sum.add(n);
+    sum.div(31.0f);
     
     IntList me = getJustMe(thing.getVertex(v));
     for (int j=0; j<me.size(); j++) {
-      thing.setVertex(me.get(j), n);
+      thing.setVertex(me.get(j), sum);
     }
     
   }
@@ -669,7 +674,7 @@ class Slimu implements MouseWheelListener{
   
 }
   static public void main(String[] passedArgs) {
-    String[] appletArgs = new String[] { "slimey" };
+    String[] appletArgs = new String[] { "slimeu" };
     if (passedArgs != null) {
       PApplet.main(concat(appletArgs, passedArgs));
     } else {
