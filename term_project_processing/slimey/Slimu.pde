@@ -5,7 +5,6 @@ class Slimu implements MouseWheelListener{
   public float dx, dy, dz;
   public float scaler;
   public int numVerts;
-  public boolean shade;
   private PShape original;
   private PVector center;
   private PVector select;
@@ -43,8 +42,6 @@ class Slimu implements MouseWheelListener{
     right = 0;
     front = 0;
     
-    shade = false;
-    
     center();
   }
   
@@ -65,7 +62,6 @@ class Slimu implements MouseWheelListener{
       thing.setVertex(i, n);
     }
     
-    if (shade == true) {thing.disableStyle();}
     shape(thing);
     scaler = 1.0;
   }

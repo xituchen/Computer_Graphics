@@ -6,7 +6,7 @@ int action = 1;
 boolean paause;
 PShape slime;
 PShader toon;
-Pair smooth, pucker, puff, pinch, reset, pause, save, shadeit;
+Pair smooth, pucker, puff, pinch, reset, pause, save;
 Slimu arf;
 
 String tips = "AD - rotate x WS - rotate y QE - rotate z scroll - scale";
@@ -19,39 +19,68 @@ void setup() {
   dz = 0.0;
   
 //  parse vertex data
-  String[] allData = loadStrings("slime_verts.txt");
+  String[] allData = loadStrings("slime_vert.txt");
   String[] allNorm = loadStrings("slime_norm.txt");
   String[] allTex = loadStrings("slime_tex.txt");
+  String[] indices = loadStrings("slime_index.txt");
+  ArrayList<PVector> verts = new ArrayList<PVector>();
+  ArrayList<PVector> txtrs = new ArrayList<PVector>();
+  ArrayList<PVector> norms = new ArrayList<PVector>();
   HashMap<PVector, PVector> vertToTex = new HashMap<PVector, PVector>();
-//  PImage img = loadImage("pattern.png");
+  PImage img = loadImage("pattern.png");
+
+  for (int i=0; i<allNorm.length; i++) {
+    String[] aNorm = trim(split(allNorm[i], ' '));
+    PVector n = new PVector(float(aNorm[0]), float(aNorm[1]), float(aNorm[2]));
+    norms.add(n);
+    if (i<allData.length) {
+      String[] aVert = trim(split(allData[i], ' '));
+      PVector v = new PVector(float(aVert[0]), float(aVert[1]), float(aVert[2]));
+      verts.add(v);
+    }
+    if (i<allTex.length) {
+      String[] aTex = trim(split(allTex[i], ' '));
+      PVector t = new PVector(float(aTex[0]), float(aTex[1]));
+      txtrs.add(t);
+    }
+  }
   
   stroke(255);
   fill(150, 180, 180, 85);
-//  noStroke();
-//  textureMode(IMAGE);
   slime = createShape();
   slime.beginShape(TRIANGLES);
-//  texture(img);
+  slime.textureMode(NORMAL);
+  slime.texture(img);
   
   int txtr = 0;
   
-  for (int i=0; i<allData.length; i++) {
-    String[] aVert = trim(split(allData[i], ' '));
-    String[] aNorm = trim(split(allNorm[i], ' '));
-    String[] aTex = trim(split(allTex[txtr], ' '));
+  for (int i=0; i<indices.length; i++) {
+    String[] index = trim(split(indices[i], ' '));
+    ArrayList<Pair> temp = new ArrayList<Pair>();
     
-    PVector v = new PVector(float(aVert[0]), float(aVert[1]), float(aVert[2]));
-    PVector t;
-    if (vertToTex.containsKey(v) == true) {
-      t = vertToTex.get(v);
+    for (int j=0; j<index.length; j++) {
+      String[] guy = trim(split(index[j], '/'));
+      Pair m = new Pair(int(guy[0])-1, int(guy[1])-1, int(guy[2])-1);
+      temp.add(m);
     }
-    else {
-      t = new PVector(float(aTex[0]), float(aTex[1]));
-      vertToTex.put(v, t);
-      txtr++;
-    }
-    slime.normal(float(aNorm[0]), float(aNorm[1]), float(aNorm[2]));
-    slime.vertex(v.x, v.y, v.z, t.x, t.y);
+    
+    PVector n1 = norms.get(temp.get(0).z);
+    PVector t1 = txtrs.get(temp.get(0).y);
+    PVector v1 = verts.get(temp.get(0).x);
+    slime.normal(n1.x, n1.y, n1.z);
+    slime.vertex(v1.x, v1.y, v1.z, t1.x, t1.y);
+    
+    PVector n2 = norms.get(temp.get(1).z);
+    PVector t2 = txtrs.get(temp.get(1).y);
+    PVector v2 = verts.get(temp.get(1).x);
+    slime.normal(n2.x, n2.y, n2.z);
+    slime.vertex(v2.x, v2.y, v2.z, t2.x, t2.y);
+    
+    PVector n3 = norms.get(temp.get(2).z);
+    PVector t3 = txtrs.get(temp.get(2).y);
+    PVector v3 = verts.get(temp.get(2).x);
+    slime.normal(n3.x, n3.y, n3.z);
+    slime.vertex(v3.x, v3.y, v3.z, t3.x, t3.y);
   }
   
   slime.endShape(CLOSE); 
@@ -66,9 +95,8 @@ void setup() {
   pucker = new Pair(1200, 240);
   puff = new Pair(1200, 320);
   pinch = new Pair(1200, 160);
-  shadeit = new Pair(1200, 620);
   
-  pause = new Pair(1200, 540);
+  pause = new Pair(1200, 620);
   save = new Pair(1200, 700);
   reset = new Pair(1200, 780);
    
@@ -130,17 +158,6 @@ void draw() {
   else {noFill();}
   ellipse(puff.x, puff.y, 50, 50);
   
-  //  shade button
-  if (inCircle(shadeit.x, shadeit.y)) {
-    textSize(12);
-    fill(255);
-    text("shade", 1140, shadeit.y);
-    fill(220, 200, 120);
-  }
-  else if (arf.shade == true) {fill(160, 200, 120);}
-  else {noFill();}
-  ellipse(shadeit.x, shadeit.y, 50, 50);
-  
   //  pause button
   if (inCircle(pause.x, pause.y)) {
     textSize(12);
@@ -190,14 +207,6 @@ void draw() {
   ellipse(reset.x, reset.y, 50, 50);
   
   lights();
-  if (arf.shade == true) {
-    noStroke();
-    fill(150, 180, 180);
-  }
-  else {
-    stroke(255);
-    fill(150, 180, 180, 80);
-  }
   arf.display();
 }
 
@@ -252,9 +261,6 @@ void mousePressed() {
   }
   else if(inCircle(pinch.x, pinch.y)) {
     action = 4;
-  }
-  else if(inCircle(shadeit.x, shadeit.y)) {
-    arf.shade = !arf.shade;
   }
   else if(inCircle(pause.x, pause.y)) {
     paause = !paause;
