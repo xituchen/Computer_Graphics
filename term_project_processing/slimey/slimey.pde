@@ -4,7 +4,8 @@ float dx, dy, dz;
 int action = 1;
 boolean paause;
 PShape slime;
-Pair smooth, carve, pull, reset, pause, save;
+PShader toon;
+Pair smooth, pucker, puff, pinch, reset, pause, save;
 Slimu arf;
 
 String tips = "AD - rotate x WS - rotate y QE - rotate z scroll - scale";
@@ -38,12 +39,15 @@ void setup() {
   paause = false;
   
   smooth = new Pair(1200, 80);
-  carve = new Pair(1200, 160);
-  pull = new Pair(1200, 240);
+  pucker = new Pair(1200, 240);
+  puff = new Pair(1200, 320);
+  pinch = new Pair(1200, 160);
   
   pause = new Pair(1200, 620);
   save = new Pair(1200, 700);
   reset = new Pair(1200, 780);
+  
+//  toon = loadShader("ToonFrag.glsl", "ToonVert.glsl");
    
   frameRate(24);
 }
@@ -51,6 +55,7 @@ void setup() {
 
 void draw() {
   background(50);
+//  shader(toon);
   
   textSize(12);
   fill(255);
@@ -70,35 +75,46 @@ void draw() {
   else {noFill();}
   ellipse(smooth.x, smooth.y, 50, 50);
   
-//  carve button
-  if (inCircle(carve.x, carve.y)) {
+  //  pinch button
+  if (inCircle(pinch.x, pinch.y)) {
     textSize(12);
     fill(255);
-    text("carve", 1140, carve.y);
+    text("pinch", 1140, pinch.y);
     fill(220, 200, 120);
   }
-  else if (action == 2) {fill(120, 150, 200);}
+  else if (action == 4) {fill(120, 150, 200);}
   else {noFill();}
-  ellipse(carve.x, carve.y, 50, 50);
+  ellipse(pinch.x, pinch.y, 50, 50);
   
-//  pull button
-  if (inCircle(pull.x, pull.y)) {
+  //  pucker button
+  if (inCircle(pucker.x, pucker.y)) {
     textSize(12);
     fill(255);
-    text("pull", 1148, pull.y);
+    text("pucker", 1132, pucker.y);
     fill(220, 200, 120);
   }
-  else if (action == 1) {fill(120, 185, 160);}
+  else if (action == 2) {fill(120, 185, 160);}
   else {noFill();}
-  ellipse(pull.x, pull.y, 50, 50);
+  ellipse(pucker.x, pucker.y, 50, 50);
   
-//  pause button
+  //  puff button
+  if (inCircle(puff.x, puff.y)) {
+    textSize(12);
+    fill(255);
+    text("puff", 1148, puff.y);
+    fill(220, 200, 120);
+  }
+  else if (action == 1) {fill(160, 200, 120);}
+  else {noFill();}
+  ellipse(puff.x, puff.y, 50, 50);
+  
+  //  pause button
   if (inCircle(pause.x, pause.y)) {
     textSize(12);
     fill(255);
     if (!paause) {text("pause", 1135, pause.y);}
     else {text("play", 1145, pause.y);}
-    fill(160, 185, 120);
+    fill(220, 200, 120);
   }
   else {noFill();}
   ellipse(pause.x, pause.y, 50, 50);
@@ -119,6 +135,7 @@ void draw() {
   }
   
   stroke(255);
+  
   //  save button
   if (inCircle(save.x, save.y)) {
     textSize(12);
@@ -138,8 +155,7 @@ void draw() {
   }
   else {noFill();}
   ellipse(reset.x, reset.y, 50, 50);
-  
-  lights();
+
   arf.display();
 }
 
@@ -175,14 +191,17 @@ void mousePressed() {
   if (inCircle(reset.x, reset.y)) {
     arf.reset();
   }
-  else if(inCircle(carve.x, carve.y)) {
+  else if(inCircle(pucker.x, pucker.y)) {
     action = 2;
   }
-  else if(inCircle(pull.x, pull.y)) {
+  else if(inCircle(puff.x, puff.y)) {
     action = 1;
   }
   else if(inCircle(smooth.x, smooth.y)) {
     action = 3;
+  }
+  else if(inCircle(pinch.x, pinch.y)) {
+    action = 4;
   }
   else if(inCircle(pause.x, pause.y)) {
     paause = !paause;
@@ -223,8 +242,9 @@ void drawSlime(PGraphics pg) {
 void mouseDragged() {
   if (!inCircle(reset.x, reset.y) && 
       !inCircle(smooth.x, smooth.y) && 
-      !inCircle(carve.x, carve.y) && 
-      !inCircle(pull.x, pull.y) &&
+      !inCircle(pucker.x, pucker.y) && 
+      !inCircle(puff.x, puff.y) &&
+      !inCircle(pinch.x, pinch.y) &&
       !inCircle(pause.x, pause.y) &&
       !inCircle(save.x, save.y)) {
     arf.justDoIt(pmouseX, pmouseY, action);

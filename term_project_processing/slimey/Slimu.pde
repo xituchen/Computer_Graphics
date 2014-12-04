@@ -204,22 +204,39 @@ class Slimu implements MouseWheelListener{
     return allMe;
   }
   
-// apex: list of the indices of selected vertex
-// circle: list of indices of unique neighbors of selected vertex
-// dowhat: action code, 1 - pull, 2 - carve
-  private void deform(int dowhat, IntList apex, IntList circle) {
-    float a = ((select.x - center.x)+(mouse.x - select.x)*5)/6;
-    float b = ((select.y - center.y)+(mouse.y - select.y)*5)/6;
-    float c = select.z - center.z;
-    float amount = mouse.dist(new PVector(select.x, select.y));
-
+  private PVector deformVector(PVector peak, PVector you, int action) {
+    float a, b, c;
+//    puff
+    if (action == 1) {
+      a = you.x - center.x;
+      b = you.y - center.y;
+      c = you.z - center.z;
+    }
+//    pucker
+    else if (action == 2) {
+      a = -(you.x - center.x);
+      b = -(you.y - center.y);
+      c = -(you.z - center.z);
+    }
+//    tweak
+    else {
+      a = ((you.x - center.x)+(peak.x - you.x)*10)/11;
+      b = ((you.y - center.y)+(peak.y - you.y)*10)/11;
+//      a = peak.x - you.x;
+//      b = peak.y - you.y;
+      c = 0;
+    }
     PVector delta = new PVector(a, b, c);
     delta.normalize();
-    delta.mult(3);
-    if (dowhat == 2) {
-      delta.mult(-1);
-    }
-    
+    return delta;
+  }
+  
+// apex: list of the indices of selected vertex
+// circle: list of indices of unique neighbors of selected vertex
+// dowhat: action code, 1 - puff, 2 - pucker, 4 - tweak
+  private void deform(int dowhat, IntList apex, IntList circle) {
+    PVector delta = deformVector(mouse, select, dowhat);
+    delta.mult(2);
     println("change: ", delta);
     
     select.add(delta);
@@ -231,16 +248,8 @@ class Slimu implements MouseWheelListener{
     for (int j=0; j<circle.size(); j++) {
       PVector k = thing.getVertex(circle.get(j));
       IntList sobeit = getJustMe(k);
-      float d = ((k.x - center.x)+(select.x - k.x)*5)/6;
-      float e = ((k.y - center.y)+(select.y - k.y)*5)/6;
-      float f = k.z - center.z;
-  
-      PVector delt = new PVector(d, e, f);
-      delt.normalize();
-      delt.mult(2);
-      if (dowhat == 2) {
-        delt.mult(-1);
-      }
+      PVector delt = deformVector(select, k, dowhat);
+      delt.mult(1);
       
       println("change: ", delt);
       
